@@ -1,0 +1,142 @@
+## vi: ft=jinja:
+# extends "base.tmpl"
+# set title = ["Package:", pkg.name, "|", conf["distro"], branch]|join(" ")
+# set newest = (versions|rejectattr("vrank", "none")|min(attribute="vrank")).version
+# block content
+<h3>Latest version availability by architecture</h3>
+<table class="pkgver">
+  <tr>
+    # for arch in arches
+    <th>{{ arch }}</th>
+    # endfor
+  </tr>
+  <tr>
+    # for arch in arches
+    #   set apk = versions|selectattr("arch", "==", arch)|first
+    #   if apk.vrank is none
+    #     set cell = ("no", "&cross;")
+    #   elif apk.vrank
+    #     set cell = ("partial", "~ " ~ apk.version)
+    #   else
+    #     set cell = ("yes", "&check; " ~ apk.version)
+    #   endif
+    <td class="version cell-{{ cell[0] }}">{{ cell[1]|safe }}</td>
+    # endfor
+  </tr>
+</table>
+
+<h3>Details for version {{ newest }}</h3>
+<table id="pkgdetails">
+  <tr><th>Description</th> <td>{{ pkg.description }}</td></tr>
+  # if pkg.url
+  <tr><th>URL</th>         <td>{{ pkg.url|urlize }}</td></tr>
+  # endif
+  <tr><th>License</th>     <td>{{ pkg.license }}</td></tr>
+  <tr><th>Repository</th>  <td>{{ pkg.repo }}</td></tr>
+  # if pkg.origin
+  <tr>
+    <th>Origin</th>
+    <td>
+      <a href="packages/{{ branch }}/{{ pkg.origin.name }}">
+        {{ pkg.origin.name }}
+      </a>
+    </td>
+  </tr>
+  # endif
+  # if pkg.maintainer
+  <tr><th>Maintainer</th>  <td>{{ pkg.maintainer }}</td></tr>
+  # endif
+  <tr><th>Size</th>        <td>{{ pkg.size|filesizeformat(true) }}</td></tr>
+  <tr><th>Updated</th>     <td>{{ pkg.updated }}</td></tr>
+  # set url = conf["gl_url"].format(startdir=startdir)
+  <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
+</table>
+
+<br clear="all">
+<div id="related">
+  <details class="column" id="deps">
+    <summary>Dependencies</summary>
+    <ul>
+    # for dep in deps|sort(attribute="dep")
+      <li>
+        <a href="packages/{{ branch }}/{{ dep.dep }}">
+          {{ dep.dep }}
+          # if dep.arch
+          ({{ dep.arch }})
+          # endif
+        </a>
+      </li>
+    # endfor
+    </ul>
+  </details>
+  <details class="column" id="rdeps">
+    <summary>Required by</summary>
+    <ul>
+    # for rdep in rdeps|sort(attribute="dep")
+      <li>
+        <a href="packages/{{ branch }}/{{ rdep.dep }}">
+          {{ rdep.dep }}
+          # if rdep.arch
+          ({{ rdep.arch }})
+          # endif
+        </a>
+      </li>
+    # endfor
+    </ul>
+  </details>
+  # if subpkgs
+  <details class="column" id="subpkgs">
+    <summary>Subpackages</summary>
+    <ul>
+    # for subpkg in subpkgs|sort(attribute="name")
+      <li>
+        <a href="packages/{{ branch }}/{{ subpkg.name }}">
+          {{ subpkg.name }}
+        </a>
+      </li>
+    # endfor
+    </ul>
+  </details>
+  # endif
+</div>
+<br clear="all">
+
+# if bugs
+<h3>Open issues</h3>
+<table id="bugs">
+  <tr>
+    <th>#</th>
+    <th>Summary</th>
+    <th>Tags</th>
+  </tr>
+  # for bug in bugs|sort(attribute="id")
+  #   set url = conf["bz_url"].format(id=bug.id)
+  <tr>
+    <td><a href="{{ url }}">{{ bug.id }}</a></td>
+    <td><a href="{{ url }}">{{ bug.summary }}</a></td>
+    <td>{{ bug.tags }}</td>
+  </tr>
+  # endfor
+</table>
+# endif
+
+# if merges
+<h3>Open merge requests</h3>
+<table id="merges">
+  <tr>
+    <th>#</th>
+    <th>Summary</th>
+    <th>Tags</th>
+  </tr>
+  # for merge in merges|sort(attribute="id")
+  #   set url = conf["gl_mr_url"].format(id=merge.id)
+  <tr>
+    <td><a href="{{ url }}">{{ merge.id }}</a></td>
+    <td><a href="{{ url }}">{{ merge.summary }}</a></td>
+    <td>{{ merge.tags }}</td>
+  </tr>
+  # endfor
+</table>
+# endif
+
+# endblock

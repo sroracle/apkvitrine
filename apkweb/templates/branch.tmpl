@@ -1,0 +1,43 @@
+## vi: ft=jinja:
+# extends "base.tmpl"
+# set title = ["Packages in", conf["distro"], branch]|join(" ")
+# set n = pkgs|length
+# block content
+<h3>Recently updated packages</h3>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+    # for arch in arches
+    <th>{{ arch }}</th>
+    # endfor
+  </tr>
+  # for pkg in pkgs
+  <tr>
+    <td>
+      <a href="packages/{{ branch }}/{{ pkg.name }}">
+        {{ pkg.name }}
+      </a>
+    </td>
+    <td>{{ pkg.description }}</td>
+    # for arch in arches
+    #   set apk = versions[pkg.name]|selectattr("arch", "==", arch)|list
+    #   if not apk
+    #     set cell = ("no", "&cross;")
+    #   elif (apk|first).vrank
+    #     set cell = ("partial", "~")
+    #   else
+    #     set cell = ("yes", "&check;")
+    #   endif
+    <td class="version cell-{{ cell[0] }}">{{ cell[1]|safe }}</td>
+    # endfor
+  </tr>
+  # endfor
+</table>
+
+# if offset >= n
+<p><a href="packages/{{ branch }}?next={{ offset - n }}">Newer</a></p>
+# endif
+<p><a href="packages/{{ branch }}?next={{ offset + n }}">Older</a></p>
+
+# endblock

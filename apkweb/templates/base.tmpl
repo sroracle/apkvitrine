@@ -1,0 +1,41 @@
+## vi: ft=jinja:
+
+# macro i_text(id, name)
+<label for="{{ id }}">{{ name }}</label>
+<input name="{{ id }}" id="{{ id }}" type="text" value="{{ query[id] }}">
+# endmacro
+
+# macro i_selected_if(id, value)
+{{ " selected" if query[id] == value }}
+# endmacro
+
+# macro i_select(id, name, opts)
+<label for="{{ id }}">{{ name }}</label>
+<select name="{{ id }}" id="{{ id }}">
+  # for opt in opts
+  <option value="{{ opt[0] }}"{{ i_selected_if(id, opt[0]) }}>{{ opt[-1] }}</option>
+  # endfor
+  # if caller
+  {{ caller() }}
+  # endif
+</select>
+# endmacro
+
+# macro i_check(id, name)
+<input name="{{ id }}" id="{{ id }}" type="checkbox" {{ "checked" if query[id] }}>
+<label for="{{ id }}">{{ name }}</label>
+# endmacro
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title }}</title>
+  <base href="{{ base }}/">
+  <link rel="stylesheet" href="{{ base }}/style.css" type="text/css">
+</head>
+<body>
+  <h1>{{ title.split("|")[0] }}</h1>
+# block content
+# endblock
+</body>
+</html>
