@@ -31,11 +31,142 @@
 <head>
   <title>{{ title }}</title>
   <base href="{{ base }}/">
+  <link rel="stylesheet" href="//static.adelielinux.org/css/bulma.min.css" type="text/css"/>
+  <link rel="stylesheet" href="//static.adelielinux.org/css/adelie-nouveau.css" type="text/css"/>
+  <link rel="stylesheet" href="//static.adelielinux.org/font/font-amal.css" type="text/css"/>
   <link rel="stylesheet" href="{{ base }}/style.css" type="text/css">
 </head>
 <body>
-  <h1>{{ title.split("|")[0] }}</h1>
+    <nav class="navbar is-dark" aria-label="Main menu">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="https://www.adelielinux.org/">
+          <img src="https://static.adelielinux.org/img/navbar.png" alt="[Penguin]">
+        </a>
+        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar_main">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navbar_main">
+        <div class="navbar-start">
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link" href="https://www.adelielinux.org/about/">About</a>
+            <div class="navbar-dropdown">
+              <a class="navbar-item" href="https://www.adelielinux.org/about/">Learn About Adélie</a>
+              <a class="navbar-item" href="https://www.adelielinux.org/athome/">Adélie At Home</a>
+              <a class="navbar-item" href="https://www.adelielinux.org/atwork/">Adélie At Work</a>
+              <a class="navbar-item" href="https://www.adelielinux.org/about/compare.html">Distro Comparison</a>
+              <a class="navbar-item" href="https://www.adelielinux.org/about/faq.html">Q&amp;A</a>
+              <a class="navbar-item" href="https://www.adelielinux.org/about/team.html">Meet the Team</a>
+            </div>
+          </div>
+          <a class="navbar-item" href="https://www.adelielinux.org/community/">Community</a>
+          <a class="navbar-item" href="https://www.adelielinux.org/community/contribute.html">Get Involved</a>
+          <a class="navbar-item" href="https://help.adelielinux.org/">Help</a>
+          <a class="navbar-item" href="https://bts.adelielinux.org/">Issues</a>
+          <a class="navbar-item" href="https://adelie.blog/">News</a>
+          <a class="navbar-item" href="https://pkg.adelielinux.org/">Software</a>
+          <a class="navbar-item" href="https://www.adelielinux.org/community/sponsors.html">Sponsors</a>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-link is-light" href="https://www.adelielinux.org/download/">Download</a>
+              <a class="button is-link is-light" href="https://code.foxkit.us/adelie/">View Git</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section class="section adelie-red">
+      <div class="container is-widescreen">
+        <h1 class="title is-1">{{ title.split("|")[0] }}</h1>
+      </div>
+    </section>
+    <section class="section content">
 # block content
 # endblock
+    </section>
+    <footer class="footer">
+<div class="container">
+<div class="columns">
+  <div class="column">
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://www.adelielinux.org/">Home</a></p>
+    <p>&nbsp;</p>
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://pkg.adelielinux.org/">Supported Software</a></p>
+    <p>&nbsp;</p>
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://www.adelielinux.org/download/">Download</a></p>
+    <p>&nbsp;</p>
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://help.adelielinux.org/">Documentation</a></p>
+    <p><a href="https://help.adelielinux.org/">Help Centre</a></p>
+    <p><a href="https://help.adelielinux.org/html/install/">Installation Handbook</a></p>
+    <p><a href="https://help.adelielinux.org/html/user/">User Handbook</a></p>
+    <p><a href="https://help.adelielinux.org/html/admin/">Administration Handbook</a></p>
+    <p><a href="https://help.adelielinux.org/html/devel/">Developer Handbook</a></p>
+  </div>
+  <div class="column">
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://www.adelielinux.org/about/">About Adélie</a></p>
+    <p><a href="https://www.adelielinux.org/athome/">Adélie At Home</a></p>
+    <p><a href="https://www.adelielinux.org/atwork/">Adélie At Work</a></p>
+    <p><a href="https://www.adelielinux.org/about/compare.html">Distro Comparison</a></p>
+    <p><a href="https://www.adelielinux.org/about/faq.html">Q&amp;A</a></p>
+    <p><a href="https://www.adelielinux.org/about/team.html">Meet The Team</a></p>
+    <p>&nbsp;</p>
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://www.adelielinux.org/community/">Community Centre</a></p>
+    <p><a href="https://www.adelielinux.org/community/contribute.html">Contribute!</a></p>
+    <p><a href="https://lists.adelielinux.org/postorius/lists/">Mailing Lists</a></p>
+    <p><a href="https://www.patreon.com/Adelie">Patreon</a></p>
+    <p><a href="https://www.paypal.me/AdelieLinux">PayPal</a></p>
+    <p><a href="https://old.reddit.com/r/AdelieLinux/">Reddit</a></p>
+    <p><a href="https://www.adelielinux.org/community/sponsors.html">Sponsors</a></p>
+  </div>
+  <div class="column">
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://www.adelielinux.org/projects/">Our Projects</a></p>
+    <p><a href="https://www.gcompat.com/">GCompat</a></p>
+    <p><a href="https://horizon.adelielinux.org/">Horizon</a></p>
+    <p>&nbsp;</p>
+    <p class="is-size-5 has-text-weight-semibold"><a href="https://code.foxkit.us/adelie/">Code Repositories</a></p>
+    <p><a href="https://code.foxkit.us/adelie/packages/">Packages</a></p>
+    <p><a href="https://code.foxkit.us/adelie/docs/">Documentation</a></p>
+    <p><a href="https://code.foxkit.us/adelie/gcompat/">GCompat</a></p>
+    <p><a href="https://code.foxkit.us/adelie/horizon/">Horizon</a></p>
+    <p><a href="https://code.foxkit.us/adelie/site/">This Site</a></p>
+    <p>&nbsp;</p>
+    <p><a href="https://www.adelielinux.org/conduct.html">Code of Conduct</a></p>
+    <p><a href="https://www.adelielinux.org/privacy.html">Privacy Statement</a></p>
+  </div>
+</div>
+</div>
+<p><hr>
+<div class="container">
+  <div class="content has-text-left">
+    <p>Copyright &copy; 2015-2020 Adélie Linux Team.
+    <a href="https://code.foxkit.us/adelie/site">Site</a> licensed under CC BY-NC-SA 4.0 and others.
+    Sponsored by and running on <a href="https://www.integricloud.com/" title="Integricloud™: Experience Freedom">Integricloud™ POWER9</a> systems.</p>
+    <p>Linux® is the registered trademark of Linus Torvalds in the U.S. and other countries.</p>
+    <p>Adélie Linux is a product of Adélie Software in the Public Benefit, Inc., a public benefit corporation organised in the State of Oklahoma, Corporation Filing #1912821309.  Adélie is not affiliated with any other Linux distribution.</p>
+  </div>
+</div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Get all "navbar-burger" elements
+  const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+  // Check if there are any navbar burgers
+  if ($navbarBurgers.length > 0) {
+    // Add a click event on each of them
+    $navbarBurgers.forEach( el => {
+      el.addEventListener('click', () => {
+        // Get the target from the "data-target" attribute
+        const target = el.dataset.target; const $target = document.getElementById(target);
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        el.classList.toggle('is-active'); $target.classList.toggle('is-active');
+      });
+    });
+  }
+
+});
+</script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 # set n = pkgs|length
 # block content
 <h3>Recently updated packages</h3>
-<table>
+<table class="table is-striped">
   <tr>
     <th>Name</th>
     <th>Description</th>
@@ -35,9 +35,13 @@
   # endfor
 </table>
 
+<nav class="pagination is-centered" aria-label="Page controls">
 # if offset >= n
-<p><a href="packages/{{ branch }}?next={{ offset - n }}">Newer</a></p>
+<a class="pagination-previous" href="packages/{{ branch }}?next={{ offset - n }}">Newer</a>
+# else
+<a class="pagination-previous" title="This is the first page" disabled>Newer</a>
 # endif
-<p><a href="packages/{{ branch }}?next={{ offset + n }}">Older</a></p>
+<a class="pagination-next" href="packages/{{ branch }}?next={{ offset + n }}">Older</a>
+</nav>
 
 # endblock
