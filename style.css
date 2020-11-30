@@ -1,3 +1,5 @@
+nav.breadcrumb a { color: #b5b5b5 }
+nav.breadcrumb .is-active a { color: white }
 
 .version { text-align: center }
 .pkgver th { word-break: break-all }

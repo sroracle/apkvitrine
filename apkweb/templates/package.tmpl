@@ -2,6 +2,17 @@
 # extends "base.tmpl"
 # set title = ["Package:", pkg.name, "|", conf["distro"], branch]|join(" ")
 # set newest = (versions|rejectattr("vrank", "none")|min(attribute="vrank")).version
+
+# block breadcrumb
+<nav class="breadcrumb is-medium">
+ <ul>
+  <li><a href="packages">packages</a></li>
+  <li><a href="packages/{{ branch }}">{{ branch }}</a></li>
+  <li class="is-active"><a href="packages/{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></li>
+ </ul>
+</nav>
+# endblock
+
 # block content
 <h3 class="title is-3">Latest version availability by architecture</h3>
 <table class="table is-bordered pkgver">
