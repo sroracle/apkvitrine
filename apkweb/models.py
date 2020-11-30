@@ -224,3 +224,70 @@ class Mergelink(_Mergelink, DbModel):
     __slots__ = ()
     _table = "mergelinks"
     _insert_sql = _insert(_table, _Mergelink._fields)
+
+_FUZZY_COLUMNS = (
+    "name",
+    "description",
+    "url",
+    "license",
+)
+
+_CROSS_COLUMNS = {
+    "deps": ("archdeps", "a1", "rdep"),
+    "rdeps": ("archdeps", "a2", "dep"),
+    "bugs": ("buglinks", None, "package"),
+    "merges": ("mergelinks", None, "package"),
+}
+
+_SORT = {
+    "updated": "updated",
+    "name": "name",
+}
+
+def build_search(query):
+    sql = f"SELECT DISTINCT packages.* FROM packages"
+
+    vers = query.get("vers")
+    if vers:
+        sql += " INNER JOIN versions ON versions.package = packages.id"
+
+    for field, (table, alias, col) in _CROSS_COLUMNS.items():
+        if not query.get(field):
+            continue
+        if not alias:
+            alias = table
+        sql += f" INNER JOIN {table} {alias} ON {alias}.{col} = packages.id"
+
+    constraints = []
+
+    cs = query.get("cs")
+    for col in _FUZZY_COLUMNS:
+        if not query.get(col):
+            continue
+        if cs:
+            constraints.append(f"packages.{col} GLOB :{col}")
+        else:
+            query[col] = "*" + query[col].upper() + "*"
+            constraints.append(f"UPPER(packages.{col}) GLOB :{col}")
+
+    maint = query.get("maintainer")
+    if maint == "None":
+        constraints.append(f"packages.maintainer IS NULL")
+    elif maint:
+        query["maintainer"] += " <*"
+        constraints.append(f"packages.maintainer GLOB :maintainer")
+
+    if not query.get("subpkgs"):
+        constraints.append("packages.origin IS NULL")
+
+    if constraints:
+        sql = f"{sql} WHERE {' AND '.join(constraints)}"
+
+    if vers:
+        sql += " GROUP BY packages.name, versions.arch HAVING (MIN(versions.vrank) > 0 OR versions.version IS NULL)"
+
+    sort = _SORT.get(query.get("sort"))
+    if sort:
+        sql += f" ORDER BY {_SORT[query['sort']]}"
+
+    return sql

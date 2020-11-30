@@ -1,0 +1,78 @@
+## vi: ft=jinja:
+# extends "base.tmpl"
+# if searched
+# set title = ["Advanced search results for packages in ", conf["distro"], branch]|join(" ")
+# else
+# set title = ["Advanced search for packages in ", conf["distro"], branch]|join(" ")
+# endif
+
+# block breadcrumb
+<nav class="breadcrumb is-medium">
+ <ul>
+  <li><a href="-/versions">packages</a></li>
+  <li><a href="{{ branch }}">{{ branch }}</a></li>
+  <li class="is-active"><a href="{{ branch }}/-/search">advanced search</a></li>
+ </ul>
+</nav>
+# endblock
+
+# block content
+<form action="{{ branch }}/-/search" method="get">
+  {{ i_text("repo", "Repository") }}
+  </d>
+  {{ i_text("name", "Name") }}
+  {{ i_text("description", "Description") }}
+  {{ i_text("url", "URL") }}
+  {{ i_text("license", "License") }}
+  # call i_select("maintainer", "Maintainer", [])
+    <option{{ i_selected_if("maintainer", "") }}></option>
+    # for maint in maints
+    <option{{ i_selected_if("maintainer", maint) }}>{{ maint }}</option>
+    # endfor
+  # endcall
+  {{ i_check("subpkgs", "Show subpackages") }}
+  {{ i_check("vers", "Only packages with version spread") }}
+  {{ i_check("deps", "Only packages with dependency spread") }}
+  {{ i_check("rdeps", "Only packages with reverse dependency spread") }}
+  {{ i_check("bugs", "Only packages with open issues") }}
+  {{ i_check("merges", "Only packages with open merge requests") }}
+  {{ i_check("cs", "Case-sensitive match with exact globbing") }}
+
+  {{ i_select(
+    "sort", "Sort by",
+    (
+      ("updated", "Recently updated"),
+      ("name", "Name"),
+    ),
+  ) }}
+ <div class="field is-grouped is-grouped-centered">
+ <p class="control">
+  <input class="button is-primary" type="submit" value="Search">
+ </p>
+ <p class="control">
+  <a class="button is-light" href="{{ branch }}/-/search">Reset</a>
+ </p>
+ </div>
+</form>
+
+# if searched
+<h3 class="title is-3">Search results</h3>
+# if pkgs
+<table class="table is-bordered is-striped is-hoverable">
+ <tr>
+  <th>Name</th>
+  <th>Description</th>
+ </tr>
+ # for pkg in pkgs
+ <tr>
+  <td><a href="{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></td>
+  <td>{{ pkg.description }}</td>
+ # endfor
+</table>
+# else
+<div class="notification is-danger">
+No packages matched your search terms.
+</div>
+# endif
+# endif
+# endblock

@@ -15,7 +15,7 @@ import jinja2       # Environment, FileSystemBytecodeCache
 SRCDIR = Path(__file__).parent.parent
 CACHE = Path("/var/tmp/apkweb")
 sys.path.insert(0, str(SRCDIR))
-import apkweb.models # Pkg
+import apkweb.models # build_search, Pkg
 
 ENV = jinja2.Environment(
     loader=jinja2.PackageLoader("apkweb", "templates"),
@@ -166,20 +166,40 @@ def page_search(path, query):
     db = init_db(branch)
     conf = apkweb.config(branch)
 
-    maints = db.execute("""
+    maints = set(db.execute("""
         SELECT DISTINCT(maintainer) FROM packages
         ORDER BY maintainer;
-    """).fetchall()
-    maints = [j for i in maints for j in i]
+    """).fetchall())
+    have_none = False
+    if (None,) in maints:
+        have_none = True
+        maints.remove((None,))
+    maints = sorted({j.split(" <")[0] for i in maints for j in i})
+    if have_none:
+        maints.insert(0, "None")
 
     ok()
+
+    searched = False
+    pkgs = []
+    if any([j for i, j in query.items() if i not in ("subpkgs", "cs", "sort")]):
+        db.row_factory = apkweb.models.Pkg.factory
+        new_query = query.copy()
+        sql = apkweb.models.build_search(new_query)
+        searched = True
+        pkgs = db.execute(sql, new_query).fetchall()
+
     response = ENV.get_template("search.tmpl").render(
+        conf=conf,
         branch=branch,
         query=query,
         maints=maints,
+        searched=searched,
+        pkgs=pkgs,
     )
     print(response)
-    save_cache(path, response)
+    if not searched:
+        save_cache(path, response)
 
 def page_home(path, query):
     conf = apkweb.config("DEFAULT")
