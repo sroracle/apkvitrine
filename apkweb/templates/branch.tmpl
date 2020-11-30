@@ -6,8 +6,8 @@
 # block breadcrumb
 <nav class="breadcrumb is-medium">
  <ul>
-  <li><a href="packages">packages</a></li>
-  <li class="is-active"><a href="packages/{{ branch }}">{{ branch }}</a></li>
+  <li><a href="-/versions">packages</a></li>
+  <li class="is-active"><a href="{{ branch }}">{{ branch }}</a></li>
  </ul>
 </nav>
 # endblock
@@ -25,7 +25,7 @@
   # for pkg in pkgs
   <tr>
     <td>
-      <a href="packages/{{ branch }}/{{ pkg.name }}">
+      <a href="{{ branch }}/{{ pkg.name }}">
         {{ pkg.name }}
       </a>
     </td>
@@ -47,11 +47,11 @@
 
 <nav class="pagination is-centered" aria-label="Page controls">
 # if offset >= n
-<a class="pagination-previous" href="packages/{{ branch }}?next={{ offset - n }}">Newer</a>
+<a class="pagination-previous" href="{{ branch }}?next={{ offset - n }}">Newer</a>
 # else
 <a class="pagination-previous" title="This is the first page" disabled>Newer</a>
 # endif
-<a class="pagination-next" href="packages/{{ branch }}?next={{ offset + n }}">Older</a>
+<a class="pagination-next" href="{{ branch }}?next={{ offset + n }}">Older</a>
 </nav>
 
 # endblock

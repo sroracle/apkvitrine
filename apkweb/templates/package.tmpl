@@ -6,9 +6,9 @@
 # block breadcrumb
 <nav class="breadcrumb is-medium">
  <ul>
-  <li><a href="packages">packages</a></li>
-  <li><a href="packages/{{ branch }}">{{ branch }}</a></li>
-  <li class="is-active"><a href="packages/{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></li>
+  <li><a href="-/versions">packages</a></li>
+  <li><a href="{{ branch }}">{{ branch }}</a></li>
+  <li class="is-active"><a href="{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></li>
  </ul>
 </nav>
 # endblock
@@ -48,7 +48,7 @@
   <tr>
     <th>Origin</th>
     <td>
-      <a href="packages/{{ branch }}/{{ pkg.origin.name }}">
+      <a href="{{ branch }}/{{ pkg.origin.name }}">
         {{ pkg.origin.name }}
       </a>
     </td>
@@ -70,7 +70,7 @@
     <ul>
     # for dep in deps|sort(attribute="dep")
       <li>
-        <a {{ 'class=".arch-specific"' if dep.arch }} href="packages/{{ branch }}/{{ dep.dep }}">
+        <a {{ 'class=".arch-specific"' if dep.arch }} href="{{ branch }}/{{ dep.dep }}">
           {{ dep.dep }}
           # if dep.arch
           ({{ dep.arch }})
@@ -87,7 +87,7 @@
     <ul>
     # for rdep in rdeps|sort(attribute="dep")
       <li>
-        <a {{ 'class=arch-specific' if rdep.arch }} href="packages/{{ branch }}/{{ rdep.dep }}">
+        <a {{ 'class=arch-specific' if rdep.arch }} href="{{ branch }}/{{ rdep.dep }}">
           {{ rdep.dep }}
           # if rdep.arch
           ({{ rdep.arch }})
@@ -105,7 +105,7 @@
     <ul>
     # for subpkg in subpkgs|sort(attribute="name")
       <li>
-        <a href="packages/{{ branch }}/{{ subpkg.name }}">
+        <a href="{{ branch }}/{{ subpkg.name }}">
           {{ subpkg.name }}
         </a>
       </li>

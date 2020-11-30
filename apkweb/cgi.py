@@ -83,7 +83,7 @@ def page_branches(path, query):
     save_cache(path, response)
 
 def page_branch(path, query):
-    _, branch = path.parts
+    branch = path.parts[0]
     db = init_db(branch)
     conf = apkweb.config(branch)
 
@@ -125,7 +125,7 @@ def page_branch(path, query):
     save_cache(path, response)
 
 def page_package(path, query):
-    _, branch, name = path.parts
+    branch, name = path.parts
     db = init_db(branch)
     conf = apkweb.config(branch)
 
@@ -162,7 +162,7 @@ def page_package(path, query):
     save_cache(path, response)
 
 def page_search(path, query):
-    _, branch = path.parts
+    branch = path.parts[0]
     db = init_db(branch)
     conf = apkweb.config(branch)
 
@@ -185,14 +185,14 @@ def page_home(path, query):
     conf = apkweb.config("DEFAULT")
     response(
         http.HTTPStatus.TEMPORARY_REDIRECT,
-        headers={"Location": "packages/" + conf["default_version"]},
+        headers={"Location": conf["default_version"]},
     )
 
 ROUTES = {
-    "packages": page_branches,
-    "packages/*": page_branch,
-    "packages/*/*": page_package,
-    "search/*": page_search,
+    "-/versions": page_branches,
+    "*/-/search": page_search,
+    "*/*": page_package,
+    "*": page_branch,
     ".": page_home,
 }
 
