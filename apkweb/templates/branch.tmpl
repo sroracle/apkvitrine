@@ -14,6 +14,23 @@
 
 # block content
 <h3 class="title is-3">Recently updated packages</h3>
+<form action="{{ branch }}/-/search" method="get">
+ <div class="field is-grouped">
+  <div class="control">
+   <input name="name" class="input" type="text" placeholder="Package name">
+  </div>
+  <div class="control">
+   <input name="description" class="input" type="text" placeholder="Description">
+  </div>
+  <div class="control">
+   <input class="button is-primary" type="submit" value="Search">
+  </div>
+  <div class="control">
+   <a class="button is-light" href="{{ branch }}/-/search">Advanced search</a>
+  </div>
+ </div>
+</form>
+<br>
 <table class="table is-bordered is-striped is-hoverable">
   <tr>
     <th>Name</th>
@@ -45,13 +62,32 @@
   # endfor
 </table>
 
+# set last_page = query["total"] // query["limit"] + 1
+# set page = query["page"]
+# if last_page
 <nav class="pagination is-centered" aria-label="Page controls">
-# if offset >= n
-<a class="pagination-previous" href="{{ branch }}?next={{ offset - n }}">Newer</a>
+# if page > 1
+<a class="pagination-previous" href="{{ branch }}?page={{ page - 1 }}">Newer</a>
 # else
 <a class="pagination-previous" title="This is the first page" disabled>Newer</a>
 # endif
-<a class="pagination-next" href="{{ branch }}?next={{ offset + n }}">Older</a>
+# if page < last_page
+<a class="pagination-next" href="{{ branch }}?page={{ page + 1 }}">Older</a>
+# else
+<a class="pagination-next" title="This is the last page" disabled>Older</a>
+# endif
+<ul class="pagination-list">
+    # if page > 1
+    <li><a class="pagination-link" href="{{ branch }}?page=1">1</a></li>
+    <li><span class="pagination-ellipsis">&hellip;</span></li>
+    # endif
+    <li><a class="pagination-link is-current" href="{{ branch }}?page={{ page }}">{{ page }}</a></li>
+    # if page < last_page
+    <li><span class="pagination-ellipsis">&hellip;</span></li>
+    <li><a class="pagination-link" href="{{ branch }}?page={{ last_page }}">{{ last_page }}</a></li>
+    # endif
+  </ul>
 </nav>
+# endif
 
 # endblock

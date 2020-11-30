@@ -1,17 +1,18 @@
 ## vi: ft=jinja:
 # extends "base.tmpl"
 # if searched
-# set title = ["Advanced search results for packages in ", conf["distro"], branch]|join(" ")
+# set title = ["Search results for packages in ", conf["distro"], branch]|join(" ")
 # else
-# set title = ["Advanced search for packages in ", conf["distro"], branch]|join(" ")
+# set title = ["Search for packages in ", conf["distro"], branch]|join(" ")
 # endif
+# set n = pkgs|length
 
 # block breadcrumb
 <nav class="breadcrumb is-medium">
  <ul>
   <li><a href="-/versions">packages</a></li>
   <li><a href="{{ branch }}">{{ branch }}</a></li>
-  <li class="is-active"><a href="{{ branch }}/-/search">advanced search</a></li>
+  <li class="is-active"><a href="{{ branch }}/-/search">search</a></li>
  </ul>
 </nav>
 # endblock
@@ -19,7 +20,6 @@
 # block content
 <form action="{{ branch }}/-/search" method="get">
   {{ i_text("repo", "Repository") }}
-  </d>
   {{ i_text("name", "Name") }}
   {{ i_text("description", "Description") }}
   {{ i_text("url", "URL") }}
@@ -58,6 +58,14 @@
 # if searched
 <h3 class="title is-3">Search results</h3>
 # if pkgs
+# if query["page"] == 1
+<div class="notification is-success is-light">
+{{ query["total"] }} packages were found.
+# if query["total"] // query["limit"]
+Displaying the first {{ query["limit"] }}.
+# endif
+</div>
+# endif
 <table class="table is-bordered is-striped is-hoverable">
  <tr>
   <th>Name</th>
@@ -69,6 +77,35 @@
   <td>{{ pkg.description }}</td>
  # endfor
 </table>
+
+# set last_page = query["total"] // query["limit"] + 1
+# set page = query["page"]
+# if last_page
+<nav class="pagination is-centered" aria-label="Page controls">
+# if page > 1
+<a class="pagination-previous" href="{{ request }}&page={{ page - 1 }}">Previous</a>
+# else
+<a class="pagination-previous" title="This is the first page" disabled>Previous</a>
+# endif
+# if page < last_page
+<a class="pagination-next" href="{{ request }}&page={{ page + 1 }}">Next</a>
+# else
+<a class="pagination-next" title="This is the last page" disabled>Next</a>
+# endif
+<ul class="pagination-list">
+    # if page > 1
+    <li><a class="pagination-link" href="{{ request }}&page=1">1</a></li>
+    <li><span class="pagination-ellipsis">&hellip;</span></li>
+    # endif
+    <li><a class="pagination-link is-current" href="{{ request }}&page={{ page }}">{{ page }}</a></li>
+    # if page < last_page
+    <li><span class="pagination-ellipsis">&hellip;</span></li>
+    <li><a class="pagination-link" href="{{ request }}&page={{ last_page }}">{{ last_page }}</a></li>
+    # endif
+  </ul>
+</nav>
+# endif
+
 # else
 <div class="notification is-danger">
 No packages matched your search terms.

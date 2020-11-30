@@ -66,6 +66,20 @@ def notfound():
 def badreq(ctype="text/plain"):
     error(http.HTTPStatus.BAD_REQUEST)
 
+def pkg_paginate(conf, query, db, sql):
+    query["limit"] = conf.getint("pagination")
+    try:
+        query["page"] = int(query.get("page", "1"))
+    except ValueError:
+        query["page"] = 1
+    sql_count = f"SELECT COUNT(*) FROM ({sql})"
+    query["offset"] = (query["page"] - 1) * query["limit"]
+    query["total"] = db.execute(sql_count, query).fetchone()[0]
+
+    db.row_factory = apkweb.models.Pkg.factory
+    sql += " LIMIT :limit OFFSET :offset"
+    return db.execute(sql, query).fetchall()
+
 def page_branches(path, query):
     conf = apkweb.config()
     branches = list(conf.sections())
@@ -87,20 +101,11 @@ def page_branch(path, query):
     db = init_db(branch)
     conf = apkweb.config(branch)
 
-    limit = conf.getint("pagination")
-    offset = query.get("next", "0")
-    try:
-        offset = int(offset)
-    except ValueError:
-        badreq()
-
-    db.row_factory = apkweb.models.Pkg.factory
-    pkgs = db.execute("""
+    pkgs = pkg_paginate(conf, query, db, """
         SELECT * FROM packages
         WHERE origin IS NULL
         ORDER BY updated DESC
-        LIMIT ? OFFSET ?;
-    """, (limit, offset)).fetchall()
+    """)
     ok()
 
     versions = {}
@@ -115,11 +120,11 @@ def page_branch(path, query):
     response = ENV.get_template("branch.tmpl").render(
         conf=conf,
         branch=branch,
+        query=query,
         repos=sorted(repos),
         arches=sorted(arches),
         pkgs=pkgs,
         versions=versions,
-        offset=offset,
     )
     print(response)
     save_cache(path, response)
@@ -180,14 +185,18 @@ def page_search(path, query):
 
     ok()
 
-    searched = False
-    pkgs = []
-    if any([j for i, j in query.items() if i not in ("subpkgs", "cs", "sort")]):
-        db.row_factory = apkweb.models.Pkg.factory
+    if any([j for i, j in query.items() if i not in ("page", "subpkgs", "cs", "sort")]):
+        searched = True
         new_query = query.copy()
         sql = apkweb.models.build_search(new_query)
-        searched = True
-        pkgs = db.execute(sql, new_query).fetchall()
+        pkgs = pkg_paginate(conf, new_query, db, sql)
+        query["limit"] = new_query["limit"]
+        query["offset"] = new_query["offset"]
+        query["total"] = new_query["total"]
+        query["page"] = new_query["page"]
+    else:
+        searched = False
+        pkgs = []
 
     response = ENV.get_template("search.tmpl").render(
         conf=conf,
@@ -221,6 +230,12 @@ if __name__ == "__main__":
     query = urllib.parse.parse_qs(os.environ.get("QUERY_STRING", ""))
     query = {i: j[-1] for i, j in query.items()}
     ENV.globals["base"] = os.environ.get("SCRIPT_NAME") or ""
+
+    # Used for pagination on search pages so that "page=x" isn't repeated
+    ENV.globals["request"] = ENV.globals["base"] + "/" + str(path) + "?"
+    ENV.globals["request"] += urllib.parse.urlencode(
+        {i: j for i, j in query.items() if i != "page"}
+    )
 
     if ".." in path.parts:
         badreq()

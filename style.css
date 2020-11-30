@@ -24,3 +24,4 @@ nav.breadcrumb .is-active a { color: white }
 }
 
 #related .column ul { padding-left: 1.2em }
+.pagination-list li { list-style-type: none }
