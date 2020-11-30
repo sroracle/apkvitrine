@@ -84,7 +84,7 @@
         <a {{ 'class=arch-specific' if dep.arch }} href="{{ branch }}/{{ dep.dep }}">
           {{ dep.dep }}
           # if dep.arch
-          ({{ dep.arch }})
+          <span class="tag is-warning is-light">{{ dep.arch }}</span>
           # endif
         </a>
       </li>
@@ -101,7 +101,7 @@
         <a {{ 'class=arch-specific' if rdep.arch }} href="{{ branch }}/{{ rdep.dep }}">
           {{ rdep.dep }}
           # if rdep.arch
-          ({{ rdep.arch }})
+          <span class="tag is-warning is-light">{{ rdep.arch }}</span>
           # endif
         </a>
       </li>
