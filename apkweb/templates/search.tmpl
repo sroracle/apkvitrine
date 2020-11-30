@@ -80,7 +80,7 @@ Displaying the first {{ query["limit"] }}.
 
 # set last_page = query["total"] // query["limit"] + 1
 # set page = query["page"]
-# if last_page
+# if last_page > 1
 <nav class="pagination is-centered" aria-label="Page controls">
 # if page > 1
 <a class="pagination-previous" href="{{ request }}&page={{ page - 1 }}">Previous</a>
