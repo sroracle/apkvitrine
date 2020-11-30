@@ -46,9 +46,11 @@ def init_db(branch):
     db = SRCDIR / f"{branch}.sqlite"
     return sqlite3.connect(str(db))
 
-def response(status, *, ctype="text/plain"):
+def response(status, *, headers=None, ctype="text/plain"):
     print("HTTP/1.1", status.value, status.phrase)
     print("Content-type:", ctype + ";", "charset=utf-8")
+    if headers:
+        [print(*i, sep=": ") for i in headers.items()]
     print()
 
 def ok(ctype="text/html"):
@@ -179,11 +181,19 @@ def page_search(path, query):
     print(response)
     save_cache(path, response)
 
+def page_home(path, query):
+    conf = apkweb.config("DEFAULT")
+    response(
+        http.HTTPStatus.TEMPORARY_REDIRECT,
+        headers={"Location": "packages/" + conf["default_version"]},
+    )
+
 ROUTES = {
     "packages": page_branches,
     "packages/*": page_branch,
     "packages/*/*": page_package,
     "search/*": page_search,
+    ".": page_home,
 }
 
 if __name__ == "__main__":
@@ -203,7 +213,11 @@ if __name__ == "__main__":
         sys.exit(0)
 
     for route, handler in ROUTES.items():
-        if path.match(route):
+        if route == ".":
+            if route == str(path):
+                handler(path, query)
+                break
+        elif path.match(route):
             handler(path, query)
             break
     else:
