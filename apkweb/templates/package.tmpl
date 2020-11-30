@@ -70,7 +70,7 @@
     <ul>
     # for dep in deps|sort(attribute="dep")
       <li>
-        <a {{ 'class=".arch-specific"' if dep.arch }} href="{{ branch }}/{{ dep.dep }}">
+        <a {{ 'class=arch-specific' if dep.arch }} href="{{ branch }}/{{ dep.dep }}">
           {{ dep.dep }}
           # if dep.arch
           ({{ dep.arch }})
