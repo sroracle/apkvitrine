@@ -1,16 +1,9 @@
 ## vi: ft=jinja:
 
 # macro i_text(id, name)
-<div class="field is-horizontal">
- <div class="field-label">
- <label class="label" for="{{ id }}">{{ name }}</label>
- </div>
- <div class="field-body">
- <div class="field">
+<div class="field">
  <div class="control">
-  <input class="input" name="{{ id }}" id="{{ id }}" type="text" value="{{ query[id] }}">
- </div>
- </div>
+  <input class="input" name="{{ id }}" id="{{ id }}" type="text" value="{{ query[id] }}" placeholder="{{ name }}">
  </div>
 </div>
 # endmacro
@@ -20,12 +13,7 @@
 # endmacro
 
 # macro i_select(id, name, opts)
-<div class="field is-horizontal">
- <div class="field-label">
- <label class="label" for="{{ id }}">{{ name }}</label>
- </div>
- <div class="field-body">
- <div class="field">
+<div class="field">
  <div class="control">
   <div class="select">
    <select name="{{ id }}" id="{{ id }}">
@@ -36,26 +24,20 @@
     {{ caller() }}
    # endif
    </select>
-  </div>
- </div>
- </div>
+	</div>
  </div>
 </div>
 # endmacro
 
 # macro i_check(id, name)
-<div class="field is-horizontal">
- <div class="field-label">
-   <input name="{{ id }}" id="{{ id }}" type="checkbox" {{ "checked" if query[id] }}>
- </div>
- <div class="field-body">
  <div class="field">
  <div class="control">
-  <label class="checkbox" for="{{ id }}">{{ name }}</label>
+  <label class="checkbox" for="{{ id }}">
+   <input name="{{ id }}" id="{{ id }}" type="checkbox" {{ "checked" if query[id] }}>
+	 {{ name }}
+	</label>
  </div>
  </div>
- </div>
-</div>
 # endmacro
 
 <!DOCTYPE html>

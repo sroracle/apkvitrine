@@ -18,34 +18,43 @@
 # endblock
 
 # block content
+<div class="columns">
+<div class="column is-one-third">
 <form action="{{ branch }}/-/search" method="get">
+	<div class="field is-grouped">
   {{ i_text("repo", "Repository") }}
   {{ i_text("name", "Name") }}
+	</div>
+	<div class="field is-grouped">
   {{ i_text("description", "Description") }}
   {{ i_text("url", "URL") }}
+	</div>
+	<div class="field is-grouped">
   {{ i_text("license", "License") }}
   # call i_select("maintainer", "Maintainer", [])
-    <option{{ i_selected_if("maintainer", "") }}></option>
+    <option{{ i_selected_if("maintainer", "") }} value="">Maintainer</option>
     # for maint in maints
     <option{{ i_selected_if("maintainer", maint) }}>{{ maint }}</option>
     # endfor
   # endcall
-  {{ i_check("subpkgs", "Show subpackages") }}
-  {{ i_check("vers", "Only packages with version spread") }}
-  {{ i_check("deps", "Only packages with dependency spread") }}
-  {{ i_check("rdeps", "Only packages with reverse dependency spread") }}
-  {{ i_check("bugs", "Only packages with open issues") }}
-  {{ i_check("merges", "Only packages with open merge requests") }}
+	</div>
   {{ i_check("cs", "Case-sensitive match with exact globbing") }}
+  {{ i_check("subpkgs", "Include subpackages") }}
+	<p>Show only packages with:</p>
+  {{ i_check("vers", "version spread") }}
+  {{ i_check("deps", "dependency spread") }}
+  {{ i_check("rdeps", "reverse dependency spread") }}
+  {{ i_check("bugs", "open issues") }}
+  {{ i_check("merges", "open merge requests") }}
 
   {{ i_select(
     "sort", "Sort by",
     (
-      ("updated", "Recently updated"),
-      ("name", "Name"),
+      ("updated", "Sort by update time"),
+      ("name", "Sort by name"),
     ),
   ) }}
- <div class="field is-grouped is-grouped-centered">
+ <div class="field is-grouped">
  <p class="control">
   <input class="button is-primary" type="submit" value="Search">
  </p>
@@ -54,8 +63,10 @@
  </p>
  </div>
 </form>
+</div>
 
 # if searched
+<div class="column">
 <h3 class="title is-3">Search results</h3>
 # if pkgs
 # if query["page"] == 1
@@ -109,6 +120,7 @@ Displaying the first {{ query["limit"] }}.
 # else
 <div class="notification is-danger">
 No packages matched your search terms.
+</div>
 </div>
 # endif
 # endif
