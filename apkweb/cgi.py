@@ -207,7 +207,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     cache = cache_name(path)
-    if cache.exists():
+    if cache.exists() and not query:
         print("X-Sendfile:", cache)
         print()
         sys.exit(0)
