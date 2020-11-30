@@ -2,6 +2,10 @@
 # extends "base.tmpl"
 # set title = ["Package:", pkg.name, "|", conf["distro"], branch]|join(" ")
 # set newest = (versions|rejectattr("vrank", "none")|min(attribute="vrank")).version
+## This isn't technically needed since repology is smart enough to
+## resolve subpackage names to their origin names, but it might improve
+## caching on their end.
+# set repology_name = pkg.origin.name if pkg.origin else pkg.name
 
 # block breadcrumb
 <nav class="breadcrumb is-medium">
@@ -15,6 +19,13 @@
 
 # block content
 <h3 class="title is-3">Latest version availability by architecture</h3>
+# if "repology_link" in conf and "repology_badge" in conf
+<p>
+ <a href="{{ conf["repology_link"] ~ repology_name }}">
+  <img src="{{ conf["repology_badge"] ~ repology_name }}" onerror="this.style.display='none'" alt="Repology version information">
+ </a>
+</p>
+# endif
 <table class="table is-bordered pkgver">
   <tr>
     # for arch in arches
