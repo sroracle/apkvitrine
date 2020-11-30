@@ -3,8 +3,8 @@
 # set title = ["Package:", pkg.name, "|", conf["distro"], branch]|join(" ")
 # set newest = (versions|rejectattr("vrank", "none")|min(attribute="vrank")).version
 # block content
-<h3>Latest version availability by architecture</h3>
-<table class="pkgver">
+<h3 class="title is-3">Latest version availability by architecture</h3>
+<table class="table is-bordered pkgver">
   <tr>
     # for arch in arches
     <th>{{ arch }}</th>
@@ -25,8 +25,8 @@
   </tr>
 </table>
 
-<h3>Details for version {{ newest }}</h3>
-<table id="pkgdetails">
+<h3 class="title is-3">Details for version {{ newest }}</h3>
+<table class="table is-bordered" id="pkgdetails">
   <tr><th>Description</th> <td>{{ pkg.description }}</td></tr>
   # if pkg.url
   <tr><th>URL</th>         <td>{{ pkg.url|urlize }}</td></tr>
@@ -52,9 +52,9 @@
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
 </table>
 
-<br clear="all">
-<div id="related">
-  <details class="column" id="deps">
+<div id="related" class="columns is-desktop">
+  <div class="column">
+   <details id="deps">
     <summary>Dependencies</summary>
     <ul>
     # for dep in deps|sort(attribute="dep")
@@ -68,8 +68,10 @@
       </li>
     # endfor
     </ul>
-  </details>
-  <details class="column" id="rdeps">
+   </details>
+  </div>
+  <div class="column">
+   <details id="rdeps">
     <summary>Required by</summary>
     <ul>
     # for rdep in rdeps|sort(attribute="dep")
@@ -83,9 +85,11 @@
       </li>
     # endfor
     </ul>
-  </details>
+   </details>
+  </div>
   # if subpkgs
-  <details class="column" id="subpkgs">
+  <div class="column">
+   <details id="subpkgs">
     <summary>Subpackages</summary>
     <ul>
     # for subpkg in subpkgs|sort(attribute="name")
@@ -96,14 +100,15 @@
       </li>
     # endfor
     </ul>
-  </details>
+   </details>
+  </div>
   # endif
 </div>
 <br clear="all">
 
 # if bugs
-<h3>Open issues</h3>
-<table id="bugs">
+<h3 class="title is-3">Open issues</h3>
+<table class="table" id="bugs">
   <tr>
     <th>#</th>
     <th>Summary</th>
@@ -121,8 +126,8 @@
 # endif
 
 # if merges
-<h3>Open merge requests</h3>
-<table id="merges">
+<h3 class="title is-3">Open merge requests</h3>
+<table class="table" id="merges">
   <tr>
     <th>#</th>
     <th>Summary</th>
