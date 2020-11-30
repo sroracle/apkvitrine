@@ -226,6 +226,7 @@ class Mergelink(_Mergelink, DbModel):
     _insert_sql = _insert(_table, _Mergelink._fields)
 
 _FUZZY_COLUMNS = (
+    "repo",
     "name",
     "description",
     "url",
