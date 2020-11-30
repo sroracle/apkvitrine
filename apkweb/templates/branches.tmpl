@@ -1,0 +1,12 @@
+## vi: ft=jinja:
+# extends "base.tmpl"
+# set title = [conf["distro"], "versions"]|join(" ")
+
+# block content
+<p>Choose an operating system version to view available packages.</p>
+<ul>
+# for branch in branches
+ <li><a href="packages/{{ branch }}">{{ branch }}</a></li>
+# endfor
+</ul>
+# endblock

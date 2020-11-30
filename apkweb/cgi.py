@@ -64,6 +64,22 @@ def notfound():
 def badreq(ctype="text/plain"):
     error(http.HTTPStatus.BAD_REQUEST)
 
+def page_branches(path, query):
+    conf = apkweb.config()
+    branches = list(conf.sections())
+
+    for i, branch in enumerate(branches):
+        if not (SRCDIR / f"{branch}.sqlite").is_file():
+            del branches[i]
+
+    ok()
+    response = ENV.get_template("branches.tmpl").render(
+        conf=conf["DEFAULT"],
+        branches=branches,
+    )
+    print(response)
+    save_cache(path, response)
+
 def page_branch(path, query):
     _, branch = path.parts
     db = init_db(branch)
@@ -164,6 +180,7 @@ def page_search(path, query):
     save_cache(path, response)
 
 ROUTES = {
+    "packages": page_branches,
     "packages/*": page_branch,
     "packages/*/*": page_package,
     "search/*": page_search,

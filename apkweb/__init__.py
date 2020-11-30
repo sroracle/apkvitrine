@@ -34,8 +34,10 @@ def _ConfigParser(**kwargs):
     parser.BOOLEAN_STATES = {"true": True, "false": False}
     return parser
 
-def config(version):
+def config(version=None):
     config = _ConfigParser()
     path = Path(__file__).parent.parent / "db.ini"
     config.read(("/etc/apkweb/db.ini", path))
-    return config[version]
+    if version:
+        return config[version]
+    return config

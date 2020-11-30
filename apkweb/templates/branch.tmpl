@@ -2,6 +2,16 @@
 # extends "base.tmpl"
 # set title = ["Packages in", conf["distro"], branch]|join(" ")
 # set n = pkgs|length
+
+# block breadcrumb
+<nav class="breadcrumb is-medium">
+ <ul>
+  <li><a href="packages">packages</a></li>
+  <li class="is-active"><a href="packages/{{ branch }}">{{ branch }}</a></li>
+ </ul>
+</nav>
+# endblock
+
 # block content
 <h3>Recently updated packages</h3>
 <table class="table is-bordered is-striped is-hoverable">
