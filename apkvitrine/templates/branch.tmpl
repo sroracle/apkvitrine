@@ -53,7 +53,7 @@
     <td>{{ pkg.description }}</td>
     # for arch in arches
     #   set apk = versions[pkg.name]|selectattr("arch", "==", arch)|list
-    #   if not apk
+    #   if not apk or (apk|first).vrank is none
     #     set cell = ("no", "&cross;")
     #   elif (apk|first).vrank
     #     set cell = ("partial", "~")
