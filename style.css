@@ -1,7 +1,8 @@
 nav.breadcrumb a { color: #b5b5b5 }
 nav.breadcrumb .is-active a { color: white }
 
-.version { text-align: center }
+.pkgver th { text-align: center !important }
+.version { text-align: center !important }
 .pkgver th { word-break: break-all }
 .cell-yes { background: #DFF0D8; color: black }
 .cell-no { background: #F2DEDE; color: black }
