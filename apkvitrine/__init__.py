@@ -40,7 +40,7 @@ def _ConfigParser(**kwargs):
 def config(version=None):
     config = _ConfigParser()
     path = Path(__file__).parent.parent / "db.ini"
-    config.read(("/etc/apkweb/db.ini", path))
+    config.read(("/etc/apkvitrine/db.ini", path))
     if version:
         return config[version]
     return config

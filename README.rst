@@ -9,7 +9,7 @@ a package tracker and analyzer for APK repositories
 :Status:
   Beta
 :Releases and source code:
-  `Foxkit Code Syndicate <https://code.foxkit.us/sroracle/apkweb>`_
+  `Foxkit Code Syndicate <https://code.foxkit.us/sroracle/apkvitrine>`_
 :Copyright:
   © 2020 Max Rees. NCSA open source license.
 

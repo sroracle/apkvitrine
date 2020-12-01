@@ -7,21 +7,21 @@ import http         # HTTPStatus
 import os           # environ
 import sqlite3      # connect
 import sys          # exit, path
-import urllib.parse # parse_qs
+import urllib.parse # parse_qs, urlencode
 from pathlib import Path
 
 import cgitb        # enable
 cgitb.enable()
 
-import jinja2       # Environment, FileSystemBytecodeCache
+import jinja2       # Environment, FileSystemBytecodeCache, PackageLoader
 
 SRCDIR = Path(__file__).parent.parent
-CACHE = Path("/var/tmp/apkweb")
+CACHE = Path("/var/tmp/apkvitrine")
 sys.path.insert(0, str(SRCDIR))
-import apkweb.models # build_search, Pkg
+import apkvitrine.models # build_search, Pkg
 
 ENV = jinja2.Environment(
-    loader=jinja2.PackageLoader("apkweb", "templates"),
+    loader=jinja2.PackageLoader("apkvitrine", "templates"),
     autoescape=True,
     trim_blocks=True,
     bytecode_cache=jinja2.FileSystemBytecodeCache(),
@@ -79,12 +79,12 @@ def pkg_paginate(conf, query, db, sql):
     query["offset"] = (query["page"] - 1) * query["limit"]
     query["total"] = db.execute(sql_count, query).fetchone()[0]
 
-    db.row_factory = apkweb.models.Pkg.factory
+    db.row_factory = apkvitrine.models.Pkg.factory
     sql += " LIMIT :limit OFFSET :offset"
     return db.execute(sql, query).fetchall()
 
 def page_branches(path, query):
-    conf = apkweb.config()
+    conf = apkvitrine.config()
     branches = list(conf.sections())
 
     for i, branch in enumerate(branches):
@@ -102,7 +102,7 @@ def page_branches(path, query):
 def page_branch(path, query):
     branch = path.parts[0]
     db = init_db(branch)
-    conf = apkweb.config(branch)
+    conf = apkvitrine.config(branch)
 
     pkgs = pkg_paginate(conf, query, db, """
         SELECT * FROM packages
@@ -135,9 +135,9 @@ def page_branch(path, query):
 def page_package(path, query):
     branch, name = path.parts
     db = init_db(branch)
-    conf = apkweb.config(branch)
+    conf = apkvitrine.config(branch)
 
-    db.row_factory = apkweb.models.Pkg.factory
+    db.row_factory = apkvitrine.models.Pkg.factory
     pkg = db.execute("""
         SELECT * FROM packages WHERE name = ?;
     """, (name,)).fetchone()
@@ -172,7 +172,7 @@ def page_package(path, query):
 def page_search(path, query):
     branch = path.parts[0]
     db = init_db(branch)
-    conf = apkweb.config(branch)
+    conf = apkvitrine.config(branch)
 
     maints = set(db.execute("""
         SELECT DISTINCT(maintainer) FROM packages
@@ -191,7 +191,7 @@ def page_search(path, query):
     if any([j for i, j in query.items() if i not in ("page", "subpkgs", "cs", "sort")]):
         searched = True
         new_query = query.copy()
-        sql = apkweb.models.build_search(new_query)
+        sql = apkvitrine.models.build_search(new_query)
         pkgs = pkg_paginate(conf, new_query, db, sql)
         query["limit"] = new_query["limit"]
         query["offset"] = new_query["offset"]
@@ -214,7 +214,7 @@ def page_search(path, query):
         save_cache(path, response)
 
 def page_home(path, query):
-    conf = apkweb.config("DEFAULT")
+    conf = apkvitrine.config("DEFAULT")
     response(
         http.HTTPStatus.TEMPORARY_REDIRECT,
         headers={"Location": conf["default_version"]},

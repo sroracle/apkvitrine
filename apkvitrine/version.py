@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: NCSA
 # Copyright (c) 2018-2020 Max Rees
 # See LICENSE for more information.
-import ctypes
-import enum
-import functools
+import ctypes    # c_char_p, CDLL, c_int, c_long, Structure
+import enum      # IntFlag
+import functools # cmp_to_key
 
 class APK_VER(enum.IntFlag):
     UNKNOWN = 0

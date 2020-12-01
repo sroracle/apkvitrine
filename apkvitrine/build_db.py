@@ -9,14 +9,14 @@ import json           # load
 import logging
 import sqlite3        # connect
 import urllib.parse   # urlencode
-import urllib.request # urlopen
+import urllib.request # Request, urlopen
 from pathlib import Path
 
 from apkkit.base.index import Index
 
-import apkweb
-import apkweb.models
-import apkweb.version
+import apkvitrine
+import apkvitrine.models
+import apkvitrine.version # APK_OPS, is_older, verkey
 
 GL_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 BZ_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -32,10 +32,10 @@ def init_db(name):
     return db
 
 def atomize(spec):
-    if not any(i in spec for i in apkweb.version.APK_OPS):
+    if not any(i in spec for i in apkvitrine.version.APK_OPS):
         return spec
 
-    for op in apkweb.version.APK_OPS:
+    for op in apkvitrine.version.APK_OPS:
         try:
             name, ver = spec.split(op, maxsplit=1)
         except ValueError:
@@ -52,7 +52,7 @@ def pkg_newest(pkgs, new, *, name=None):
     old = pkgs.get(name)
     if not old:
         pass
-    elif apkweb.version.is_older(old.version, new.version):
+    elif apkvitrine.version.is_older(old.version, new.version):
         pass
     elif int(old._builddate) < int(new._builddate):
         pass
@@ -102,13 +102,13 @@ def populate_packages(db, all_pkgs):
     # Populate main packages first so we can reference them as origins to
     # subpackages
     mainpkgs = [
-        apkweb.models.Pkg.from_index(i, None)
+        apkvitrine.models.Pkg.from_index(i, None)
         for i in all_pkgs.values() if i.origin == i.name
     ]
-    apkweb.models.Pkg.insertmany(db, mainpkgs)
+    apkvitrine.models.Pkg.insertmany(db, mainpkgs)
     db.commit()
     del mainpkgs
-    db.row_factory = apkweb.models.Pkg.factory
+    db.row_factory = apkvitrine.models.Pkg.factory
     rows = db.execute("SELECT * FROM packages WHERE origin IS NULL;")
     mainpkgs = {i.name: i for i in rows.fetchall()}
     del rows
@@ -119,8 +119,8 @@ def populate_packages(db, all_pkgs):
         if pkg.origin == pkg.name:
             continue
         origin = mainpkgs[pkg.origin]
-        subpkgs.append(apkweb.models.Pkg.from_index(pkg, origin.id))
-    apkweb.models.Pkg.insertmany(db, subpkgs)
+        subpkgs.append(apkvitrine.models.Pkg.from_index(pkg, origin.id))
+    apkvitrine.models.Pkg.insertmany(db, subpkgs)
     db.commit()
     del mainpkgs
     del subpkgs
@@ -135,14 +135,14 @@ def populate_versions(db, all_pkgs, pkgs, pkgids):
     vers = collections.defaultdict(list)
     for arch in pkgs.keys():
         for pkg in pkgs[arch].values():
-            vers[pkg.origin].append(apkweb.models.Version(
+            vers[pkg.origin].append(apkvitrine.models.Version(
                 None, pkgids[pkg.name], arch, pkg.version, None,
                 pkg.size, pkg.commit, int(pkg._builddate),
             ))
         missing = set(all_pkgs.keys()) - set(pkgs[arch].keys())
         for name in missing:
             origin = all_pkgs[name].origin
-            vers[origin].append(apkweb.models.Version(
+            vers[origin].append(apkvitrine.models.Version(
                 None, pkgids[name], arch, None, None,
                 None, None, None,
             ))
@@ -151,7 +151,7 @@ def populate_versions(db, all_pkgs, pkgs, pkgids):
         # Sort newest to oldest
         cmpvers = sorted(
             {i.version for i in vers[name] if i.version},
-            key=apkweb.version.verkey,
+            key=apkvitrine.version.verkey,
             reverse=True,
         )
         for i, ver in enumerate(vers[name]):
@@ -162,7 +162,7 @@ def populate_versions(db, all_pkgs, pkgs, pkgids):
             )
 
     vers = [j for i in vers.values() for j in i]
-    apkweb.models.Version.insertmany(db, vers)
+    apkvitrine.models.Version.insertmany(db, vers)
     db.commit()
 
 def populate_deps(db, pkgs, pkgids, provs):
@@ -205,10 +205,10 @@ def populate_deps(db, pkgs, pkgids, provs):
             if new:
                 adeps.append((arch, name, new))
 
-    cdeps = [apkweb.models.Dep(i, k) for i, j in cdeps.items() for k in j]
-    adeps = [apkweb.models.Archdep(i[0], i[1], j) for i in adeps for j in i[2]]
-    apkweb.models.Dep.insertmany(db, cdeps)
-    apkweb.models.Archdep.insertmany(db, adeps)
+    cdeps = [apkvitrine.models.Dep(i, k) for i, j in cdeps.items() for k in j]
+    adeps = [apkvitrine.models.Archdep(i[0], i[1], j) for i in adeps for j in i[2]]
+    apkvitrine.models.Dep.insertmany(db, cdeps)
+    apkvitrine.models.Archdep.insertmany(db, adeps)
     db.commit()
 
 def populate_bugs(conf, db, pkgids):
@@ -259,16 +259,16 @@ def populate_bugs(conf, db, pkgids):
             )
             continue
 
-        bugs.append(apkweb.models.Bug(
+        bugs.append(apkvitrine.models.Bug(
             bug["id"], bug["summary"], ",".join(bug["keywords"]),
             datetime.datetime.strptime(
                 bug["last_change_time"], BZ_DATE_FORMAT,
             ).strftime("%s"),
         ))
-        buglinks.append(apkweb.models.Buglink(bug["id"], pkgid))
+        buglinks.append(apkvitrine.models.Buglink(bug["id"], pkgid))
 
-    apkweb.models.Bug.insertmany(db, bugs)
-    apkweb.models.Buglink.insertmany(db, buglinks)
+    apkvitrine.models.Bug.insertmany(db, bugs)
+    apkvitrine.models.Buglink.insertmany(db, buglinks)
     db.commit()
 
 def populate_merges(conf, db, pkgids):
@@ -311,22 +311,22 @@ def populate_merges(conf, db, pkgids):
                 continue
 
             if not matches:
-                merges.append(apkweb.models.Merge(
+                merges.append(apkvitrine.models.Merge(
                     merge["iid"], merge["title"], ",".join(merge["labels"]),
                     datetime.datetime.strptime(
                         merge["updated_at"], GL_DATE_FORMAT,
                     ).strftime("%s"),
                 ))
                 matches = True
-            mergelinks.append(apkweb.models.Mergelink(merge["iid"], pkgid))
+            mergelinks.append(apkvitrine.models.Mergelink(merge["iid"], pkgid))
 
-    apkweb.models.Merge.insertmany(db, merges)
-    apkweb.models.Mergelink.insertmany(db, mergelinks)
+    apkvitrine.models.Merge.insertmany(db, merges)
+    apkvitrine.models.Mergelink.insertmany(db, mergelinks)
     db.commit()
 
 if __name__ == "__main__":
     opts = argparse.ArgumentParser(
-        usage="python3 -m apkweb.build_db [options ...] VERSION [VERSION ...]",
+        usage="python3 -m apkvitrine.build_db [options ...] VERSION [VERSION ...]",
     )
     opts.add_argument(
         "-d", "--output-directory", dest="dir",
@@ -347,7 +347,7 @@ if __name__ == "__main__":
 
     for version in opts.versions:
         logging.info("Building %s database...", version)
-        conf = apkweb.config(version)
+        conf = apkvitrine.config(version)
         repos = conf.getmaplist("repos")
         db = init_db(opts.dir / f"{version}.sqlite")
 
