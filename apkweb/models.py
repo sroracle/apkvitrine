@@ -288,6 +288,6 @@ def build_search(query):
         sql += " GROUP BY packages.name, versions.arch HAVING (MIN(versions.vrank) > 0 OR versions.version IS NULL)"
 
     sort = _SORT.get(query.get("sort"), "name")
-    sql += f" ORDER BY {_SORT[query['sort']]}"
+    sql += f" ORDER BY {sort}"
 
     return sql
