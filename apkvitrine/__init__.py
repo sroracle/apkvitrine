@@ -39,8 +39,9 @@ def _ConfigParser(**kwargs):
 
 def config(version=None):
     config = _ConfigParser()
-    path = Path(__file__).parent.parent / "db.ini"
-    config.read(("/etc/apkvitrine/db.ini", path))
+    files = sorted(Path("/etc/apkvitrine").glob("*.ini"))
+    files.append(Path(__file__).parent.parent / "config.ini")
+    config.read(files)
     if version:
         return config[version]
     return config
