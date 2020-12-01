@@ -6,8 +6,6 @@ nav.breadcrumb .is-active a { color: white }
 .cell-yes { background: #DFF0D8; color: black }
 .cell-no { background: #F2DEDE; color: black }
 .cell-partial { background: #FFF176; color: black }
-.arch-specific { font-style: italic }
-.arch-specific .tag { font-style: normal }
 
 #related .column summary {
   font-size: 1.2em;

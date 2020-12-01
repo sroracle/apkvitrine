@@ -102,16 +102,23 @@ class Pkg(_Pkg, DbModel):
             where = "rdep"
 
         deps = list(db.execute(f"""
-            SELECT NULL, NULL, packages.name FROM deps
+            SELECT NULL, 1, packages.name FROM deps
             INNER JOIN packages ON packages.id = deps.{join}
             WHERE {where} = ?;
         """, (self.id,)).fetchall())
 
         deps += list(db.execute(f"""
-            SELECT archdeps.arch, NULL, packages.name FROM archdeps
+            SELECT archdeps.arch, 1, packages.name FROM archdeps
             INNER JOIN packages ON packages.id = archdeps.{join}
             WHERE {where} = ?;
         """, (self.id,)).fetchall())
+
+        if not reverse:
+            deps += list(db.execute(f"""
+                SELECT missingdeps.arch, NULL, missingdeps.dep FROM missingdeps
+                INNER JOIN packages ON packages.id = missingdeps.package
+                WHERE packages.id = ?;
+            """, (self.id,)).fetchall())
 
         db.row_factory = old_factory
         return deps
@@ -253,6 +260,7 @@ _FUZZY_COLUMNS = (
 _CROSS_COLUMNS = {
     "deps": ("archdeps", "a1", "rdep"),
     "rdeps": ("archdeps", "a2", "dep"),
+    "mdeps": ("missingdeps", None, "package"),
     "bugs": ("buglinks", None, "package"),
     "merges": ("mergelinks", None, "package"),
 }
