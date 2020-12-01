@@ -307,6 +307,9 @@ def build_search(query):
     if not query.get("subpkgs"):
         constraints.append("packages.origin IS NULL")
 
+    if query.get("dirty"):
+        constraints.append("packages.revision GLOB '*-dirty'")
+
     if constraints:
         sql = f"{sql} WHERE {' AND '.join(constraints)}"
 

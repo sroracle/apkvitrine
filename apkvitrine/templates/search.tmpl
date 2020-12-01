@@ -57,6 +57,7 @@
 	Show only packages with:
 	</div>
 	<div class="message-body">
+  {{ i_check("dirty", "dirty revisions") }}
   {{ i_check("vers", "version spread") }}
   {{ i_check("deps", "dependency spread") }}
   {{ i_check("rdeps", "reverse dependency spread") }}
