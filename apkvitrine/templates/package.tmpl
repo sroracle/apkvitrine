@@ -80,14 +80,15 @@
 <div id="related" class="columns is-desktop">
   <div class="column">
    <details id="deps">
-    <summary>Dependencies</summary>
+    # set deps = deps|groupby("dep")|list
+    <summary>Dependencies ({{ deps|length }}) </summary>
     <ul>
-    # for _, i in deps|groupby("dep")
-      # set dep = i[0]
-      # set j = i|selectattr("arch")|groupby("arch")|list
+    # for _, deps in deps
+      # set dep = deps[0]
+      # set archdeps = deps|selectattr("arch")|groupby("arch")|list
       # if not dep.rdep
         # set class = "class='tag is-danger' title='This package does not exist'"
-      # elif j
+      # elif archdeps
         # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
@@ -95,7 +96,7 @@
         <a href="{{ branch }}/{{ dep.dep }}">
         # endif
           <span {{ class|safe }}>{{ dep.dep }}</span>
-          # for arch, _ in j
+          # for arch, _ in archdeps
           <span class="tag is-light">{{ arch }}</span>
           # endfor
         # if dep.rdep
@@ -108,18 +109,19 @@
   </div>
   <div class="column">
    <details id="rdeps">
-    <summary>Required by</summary>
+    # set rdeps = rdeps|groupby("dep")|list
+    <summary>Required by ({{ rdeps|length }})</summary>
     <ul>
-    # for _, i in rdeps|groupby("dep")
-      # set rdep = i[0]
-      # set j = i|selectattr("arch")|groupby("arch")|list
+    # for _, rdeps in rdeps
+      # set rdep = rdeps[0]
+      # set archdeps = rdeps|selectattr("arch")|groupby("arch")|list
       # if rdep.arch
       # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
         <a href="{{ branch }}/{{ rdep.dep }}">
           <span {{ class|safe }}>{{ rdep.dep }}</span>
-          # for arch, _ in j
+          # for arch, _ in archdeps
           <span class="tag is-light">{{ arch }}</span>
           # endfor
         </a>
@@ -131,7 +133,7 @@
   # if subpkgs
   <div class="column">
    <details id="subpkgs">
-    <summary>Subpackages</summary>
+    <summary>Subpackages ({{ subpkgs|length }})</summary>
     <ul>
     # for subpkg in subpkgs|sort(attribute="name")
       <li>
