@@ -5,7 +5,7 @@
 import datetime     # datetime, timezone
 import http         # HTTPStatus
 import os           # environ
-import sqlite3      # connect
+import sqlite3      # connect, OperationalError
 import sys          # exit, path
 import urllib.parse # parse_qs, urlencode
 from pathlib import Path
@@ -47,13 +47,20 @@ def format_timestamp(timestamp):
 def init_db(branch):
     assert "/" not in branch
     db = SRCDIR / f"{branch}.sqlite"
-    return sqlite3.connect(str(db))
+    if not db.is_file():
+        notfound()
+        return None
+    try:
+        return sqlite3.connect(str(db))
+    except sqlite3.OperationalError as e:
+        error(http.HTTPStatus.INTERNAL_SERVER_ERROR)
+        return None
 
-def response(status, *, headers=None, ctype="text/plain"):
+def response(status, *, headers={}, ctype="text/plain"):
     print("HTTP/1.1", status.value, status.phrase)
     print("Content-type:", ctype + ";", "charset=utf-8")
-    if headers:
-        [print(*i, sep=": ") for i in headers.items()]
+    for header in headers.items():
+        print(*header, sep=": ")
     print()
 
 def ok(ctype="text/html"):
@@ -67,7 +74,7 @@ def notfound():
     error(http.HTTPStatus.NOT_FOUND)
 
 def badreq(ctype="text/plain"):
-    error(http.HTTPStatus.BAD_REQUEST)
+    error(http.HTTPStatus.BAD_REQUEST, ctype=ctype)
 
 def pkg_paginate(conf, query, db, sql):
     query["limit"] = conf.getint("pagination")
@@ -83,7 +90,7 @@ def pkg_paginate(conf, query, db, sql):
     sql += " LIMIT :limit OFFSET :offset"
     return db.execute(sql, query).fetchall()
 
-def page_branches(path, query):
+def page_branches(path, _query):
     conf = apkvitrine.config()
     branches = list(conf.sections())
 
@@ -102,6 +109,8 @@ def page_branches(path, query):
 def page_branch(path, query):
     branch = path.parts[0]
     db = init_db(branch)
+    if not db:
+        return
     conf = apkvitrine.config(branch)
 
     pkgs = pkg_paginate(conf, query, db, """
@@ -132,9 +141,11 @@ def page_branch(path, query):
     print(response)
     save_cache(path, response)
 
-def page_package(path, query):
+def page_package(path, _query):
     branch, name = path.parts
     db = init_db(branch)
+    if not db:
+        return
     conf = apkvitrine.config(branch)
 
     db.row_factory = apkvitrine.models.Pkg.factory
@@ -142,7 +153,8 @@ def page_package(path, query):
         SELECT * FROM packages WHERE name = ?;
     """, (name,)).fetchone()
     if not pkg:
-        return notfound()
+        notfound()
+        return
 
     pkg = pkg._replace(updated=format_timestamp(pkg.updated))
     pkg = pkg._replace(origin=pkg.get_origin(db))
@@ -172,6 +184,8 @@ def page_package(path, query):
 def page_search(path, query):
     branch = path.parts[0]
     db = init_db(branch)
+    if not db:
+        return
     conf = apkvitrine.config(branch)
 
     maints = set(db.execute("""
@@ -213,7 +227,7 @@ def page_search(path, query):
     if not searched:
         save_cache(path, response)
 
-def page_home(path, query):
+def page_home(_path, _query):
     conf = apkvitrine.config("DEFAULT")
     response(
         http.HTTPStatus.TEMPORARY_REDIRECT,

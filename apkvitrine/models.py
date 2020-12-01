@@ -9,6 +9,8 @@ def _insert(table, columns):
     return f"INSERT INTO {table} ({columns}) VALUES ({values});"
 
 class DbModel:
+    _insert_sql = None
+
     def insert(self, db):
         return db.execute(self._insert_sql, self)
 
@@ -249,7 +251,7 @@ _SORT = {
 }
 
 def build_search(query):
-    sql = f"SELECT DISTINCT packages.* FROM packages"
+    sql = "SELECT DISTINCT packages.* FROM packages"
 
     vers = query.get("vers")
     if vers:
@@ -276,10 +278,10 @@ def build_search(query):
 
     maint = query.get("maintainer")
     if maint == "None":
-        constraints.append(f"packages.maintainer IS NULL")
+        constraints.append("packages.maintainer IS NULL")
     elif maint:
         query["maintainer"] += " <*"
-        constraints.append(f"packages.maintainer GLOB :maintainer")
+        constraints.append("packages.maintainer GLOB :maintainer")
 
     if not query.get("subpkgs"):
         constraints.append("packages.origin IS NULL")

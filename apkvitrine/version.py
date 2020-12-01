@@ -30,7 +30,7 @@ class _apk_blob_t(ctypes.Structure):
         ("ptr", ctypes.c_char_p),
     ]
 
-    def __init__(self, s):
+    def __init__(self, s): # pylint: disable=super-init-not-called
         s = s.encode("utf-8")
         self.len = len(s)
         self.ptr = ctypes.c_char_p(s)

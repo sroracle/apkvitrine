@@ -37,7 +37,7 @@ def atomize(spec):
 
     for op in apkvitrine.version.APK_OPS:
         try:
-            name, ver = spec.split(op, maxsplit=1)
+            name, _ver = spec.split(op, maxsplit=1)
         except ValueError:
             continue
 
@@ -250,7 +250,7 @@ def populate_bugs(conf, db, pkgids):
                 "Bug %d: invalid %r: %s", bug["id"], field, bug[field],
             )
             continue
-        repo, pkg = sdir
+        _repo, pkg = sdir
         pkgid = pkgids.get(pkg)
         if not pkgid:
             logging.warning(
