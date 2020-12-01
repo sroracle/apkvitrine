@@ -82,20 +82,22 @@
    <details id="deps">
     <summary>Dependencies</summary>
     <ul>
-    # for dep in deps|sort(attribute="dep")
+    # for _, i in deps|groupby("dep")
+      # set dep = i[0]
+      # set j = i|selectattr("arch")|groupby("arch")|list
       # if not dep.rdep
-      # set class = "class='tag is-danger' title='This package does not exist'"
-      # elif dep.arch
-      # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
+        # set class = "class='tag is-danger' title='This package does not exist'"
+      # elif j
+        # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
         # if dep.rdep
         <a href="{{ branch }}/{{ dep.dep }}">
         # endif
           <span {{ class|safe }}>{{ dep.dep }}</span>
-          # if dep.arch
-          <span class="tag is-light">{{ dep.arch }}</span>
-          # endif
+          # for arch, _ in j
+          <span class="tag is-light">{{ arch }}</span>
+          # endfor
         # if dep.rdep
         </a>
         # endif
@@ -108,16 +110,18 @@
    <details id="rdeps">
     <summary>Required by</summary>
     <ul>
-    # for rdep in rdeps|sort(attribute="dep")
+    # for _, i in rdeps|groupby("dep")
+      # set rdep = i[0]
+      # set j = i|selectattr("arch")|groupby("arch")|list
       # if rdep.arch
       # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
         <a href="{{ branch }}/{{ rdep.dep }}">
           <span {{ class|safe }}>{{ rdep.dep }}</span>
-          # if rdep.arch
-          <span class="tag is-light">{{ rdep.arch }}</span>
-          # endif
+          # for arch, _ in j
+          <span class="tag is-light">{{ arch }}</span>
+          # endfor
         </a>
       </li>
     # endfor
