@@ -49,6 +49,12 @@ CREATE TABLE archdeps (
   dep NOT NULL REFERENCES packages(id)
 );
 
+CREATE TABLE missingdeps (
+  package NOT NULL REFERENCES packages(id),
+  arch TEXT NOT NULL,
+  dep TEXT NOT NULL
+);
+
 CREATE TABLE bugs (
   id INTEGER PRIMARY KEY,
   summary TEXT NOT NULL,

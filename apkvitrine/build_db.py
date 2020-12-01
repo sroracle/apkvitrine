@@ -168,7 +168,11 @@ def populate_versions(db, all_pkgs, pkgs, pkgids):
 def populate_deps(db, pkgs, pkgids, provs):
     logging.info("Building dependency tables...")
 
+    # Common deps
     cdeps = {}
+    # Missing deps
+    mdeps = []
+
     for arch in pkgs:
         for name, pkg in pkgs[arch].items():
             odeps = set()
@@ -181,6 +185,7 @@ def populate_deps(db, pkgs, pkgids, provs):
                         "%s/%s depends on unknown %r",
                         arch, name, dep,
                     )
+                    mdeps.append((pkgids[name], arch, dep))
                     continue
                 odep = pkgids.get(odep.name)
                 if not odep:
@@ -199,6 +204,7 @@ def populate_deps(db, pkgs, pkgids, provs):
             else:
                 cdeps[pkgids[name]] &= odeps
 
+    # Arch-specific deps
     adeps = []
     for arch in pkgs:
         for name, pkg in pkgs[arch].items():
@@ -209,8 +215,10 @@ def populate_deps(db, pkgs, pkgids, provs):
 
     cdeps = [apkvitrine.models.Dep(i, k) for i, j in cdeps.items() for k in j]
     adeps = [apkvitrine.models.Archdep(i[0], i[1], j) for i in adeps for j in i[2]]
+    mdeps = [apkvitrine.models.Missingdep(*i) for i in mdeps]
     apkvitrine.models.Dep.insertmany(db, cdeps)
     apkvitrine.models.Archdep.insertmany(db, adeps)
+    apkvitrine.models.Missingdep.insertmany(db, mdeps)
     db.commit()
 
 def populate_bugs(conf, db, pkgids):

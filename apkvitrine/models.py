@@ -182,6 +182,18 @@ class Archdep(_Archdep, DbModel):
     _table = "archdeps"
     _insert_sql = _insert(_table, _Archdep._fields)
 
+_Missingdep = collections.namedtuple(
+    "Missingdep", (
+        "package",
+        "arch",
+        "dep",
+    ),
+)
+class Missingdep(_Missingdep, DbModel):
+    __slots__ = ()
+    _table = "missingdeps"
+    _insert_sql = _insert(_table, _Missingdep._fields)
+
 _Bug = collections.namedtuple(
     "Bug", (
         "id",
