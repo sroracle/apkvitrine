@@ -49,12 +49,18 @@
 	</article>
   {{ i_check("cs", "Case-sensitive match with exact globbing") }}
   {{ i_check("subpkgs", "Include subpackages") }}
-	<p>Show only packages with:</p>
+	<article class="message">
+	<div class="message-header">
+	Show only packages with:
+	</div>
+	<div class="message-body">
   {{ i_check("vers", "version spread") }}
   {{ i_check("deps", "dependency spread") }}
   {{ i_check("rdeps", "reverse dependency spread") }}
   {{ i_check("bugs", "open issues") }}
   {{ i_check("merges", "open merge requests") }}
+	</div>
+	</article>
 
   {{ i_select(
     "sort", "Sort by",
