@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: NCSA
+# Copyright (c) 2020 Max Rees
+# See LICENSE for more information.
 import argparse       # ArgumentParser
 import collections    # defaultdict
 import datetime       # datetime

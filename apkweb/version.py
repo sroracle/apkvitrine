@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-#
-# Copyright © 2018-2020 Adélie Linux team.  All rights reserved.
-# NCSA license.
-#
+# SPDX-License-Identifier: NCSA
+# Copyright (c) 2018-2020 Max Rees
+# See LICENSE for more information.
 import ctypes
 import enum
 import functools

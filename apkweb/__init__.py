@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: NCSA
+# Copyright (c) 2020 Max Rees
+# See LICENSE for more information.
 import collections  # defaultdict
 import configparser # ConfigParser
 from pathlib import Path
