@@ -94,6 +94,20 @@ def pkg_paginate(conf, query, db, sql):
     sql += " LIMIT :limit OFFSET :offset"
     return db.execute(sql, query).fetchall()
 
+def pkg_versions(conf, db, pkgs):
+    versions = {}
+    repos = set()
+    arches = set()
+
+    for i, pkg in enumerate(pkgs):
+        repos.add(pkg.repo)
+        pkgs[i] = pkg._replace(updated=format_timestamp(pkg.updated))
+        versions[pkg.name] = pkg.get_versions(db)
+    for repo in repos:
+        arches.update(conf.getmaplist("repos")[repo])
+
+    return versions, sorted(repos), sorted(arches)
+
 def page_branches(path, _query):
     conf = apkvitrine.config()
     branches = list(conf.sections())
@@ -124,22 +138,14 @@ def page_branch(path, query):
         ORDER BY updated DESC
     """)
     ok()
-
-    versions = {}
-    repos = set()
-    arches = set()
-    for i, pkg in enumerate(pkgs):
-        repos.add(pkg.repo)
-        arches.update(conf.getmaplist("repos")[pkg.repo])
-        pkgs[i] = pkg._replace(updated=format_timestamp(pkg.updated))
-        versions[pkg.name] = pkg.get_versions(db)
+    versions, repos, arches = pkg_versions(conf, db, pkgs)
 
     response = ENV.get_template("branch.tmpl").render(
         conf=conf,
         branch=branch,
         query=query,
-        repos=sorted(repos),
-        arches=sorted(arches),
+        repos=repos,
+        arches=arches,
         pkgs=pkgs,
         versions=versions,
     )
@@ -222,13 +228,23 @@ def page_search(path, query):
         searched = False
         pkgs = []
 
+    if query.get("availability"):
+        versions, repos, arches = pkg_versions(conf, db, pkgs)
+    else:
+        versions = {}
+        repos = []
+        arches = []
+
     response = ENV.get_template("search.tmpl").render(
         conf=conf,
         branch=branch,
         query=query,
         maints=maints,
         searched=searched,
+        repos=repos,
+        arches=arches,
         pkgs=pkgs,
+        versions=versions,
     )
     print(response)
     if not searched:

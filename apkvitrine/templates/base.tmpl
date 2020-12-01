@@ -4,6 +4,20 @@
 ## Copyright (c) 2020 A. Wilcox
 ## See LICENSE for more information.
 
+# macro table_availability(arches, pkg, versions)
+# for arch in arches
+#   set apk = versions[pkg.name]|selectattr("arch", "==", arch)|list
+#   if not apk or (apk|first).vrank is none
+#     set cell = ("is-danger", "&cross;")
+#   elif (apk|first).vrank
+#     set cell = ("is-warning", "~ " ~ apk.version)
+#   else
+#     set cell = ("is-success", "&check; " ~ apk.version)
+#   endif
+<td class="version {{ cell[0] }}">{{ cell[1]|safe }}</td>
+# endfor
+# endmacro
+
 # macro i_text(id, name)
 <div class="field">
  <div class="control">

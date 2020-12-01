@@ -9,6 +9,7 @@
 # set title = ["Search for packages in ", conf["distro"], branch]|join(" ")
 # endif
 # set n = pkgs|length
+# set availability = query.get("availability")
 
 # block breadcrumb
 <nav class="breadcrumb is-medium">
@@ -53,6 +54,7 @@
   <div class="field">
   {{ i_check("cs", "Case-sensitive match with exact globbing") }}
   {{ i_check("subpkgs", "Include subpackages") }}
+  {{ i_check("availability", "Show availability on each architecture") }}
   </div>
 	<article class="message">
 	<div class="message-header">
@@ -105,11 +107,16 @@ Displaying the first {{ query["limit"] }}.
  <tr>
   <th>Name</th>
   <th>Description</th>
+  # for arch in arches
+  <th align="center">{{ arch }}</th>
+  # endfor
  </tr>
  # for pkg in pkgs
  <tr>
   <td><a href="{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></td>
   <td>{{ pkg.description }}</td>
+	{{ table_availability(arches, pkg, versions) }}
+ </tr>
  # endfor
 </table>
 
