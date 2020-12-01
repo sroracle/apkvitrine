@@ -231,9 +231,10 @@ def page_search(path, query):
 
 def page_home(_path, _query):
     conf = apkvitrine.config("DEFAULT")
+    location = ENV.globals["base"] + "/" + conf["default_version"]
     response(
         http.HTTPStatus.TEMPORARY_REDIRECT,
-        headers={"Location": conf["default_version"]},
+        headers={"Location": location},
     )
 
 ROUTES = {
