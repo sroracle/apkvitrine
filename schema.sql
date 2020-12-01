@@ -13,22 +13,6 @@ CREATE TABLE packages (
   updated INTEGER
 );
 
-CREATE VIRTUAL TABLE fts_packages USING fts5(
-  id UNINDEXED,
-  repo UNINDEXED,
-  name,
-  description,
-  url,
-  license,
-  origin UNINDEXED,
-  maintainer,
-  size UNINDEXED,
-  updated UNINDEXED,
-
-  content='packages',
-  content_rowid='id'
-);
-
 CREATE TABLE versions (
   id INTEGER PRIMARY KEY,
   package NOT NULL REFERENCES packages(id),

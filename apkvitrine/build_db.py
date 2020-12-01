@@ -361,9 +361,3 @@ if __name__ == "__main__":
 
         populate_bugs(conf, db, pkgids)
         populate_merges(conf, db, pkgids)
-
-        db.execute("""
-            INSERT INTO fts_packages(fts_packages)
-            VALUES ('rebuild');
-        """)
-        db.close()
