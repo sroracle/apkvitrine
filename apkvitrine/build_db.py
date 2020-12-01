@@ -174,6 +174,8 @@ def populate_deps(db, pkgs, pkgids, provs):
             odeps = set()
             for dep in pkg.depends:
                 odep = provs.get(atomize(dep))
+                if not odep and dep.startswith("!"):
+                    continue
                 if not odep:
                     logging.warning(
                         "%s/%s depends on unknown %r",
