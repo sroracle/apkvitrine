@@ -11,6 +11,9 @@ url = https://mirrormaster.adelielinux.org/adelie/{version}/{repo}/{arch}/APKIND
 ; Required: list of repositories and the architectures they support
 repos = system aarch64 ppc ppc64 pmmx x86_64
         user aarch64 ppc ppc64 pmmx x86_64
+; Required: URL for revision links
+; Substitutions: {revision}
+gl_rev_url = https://code.foxkit.us/adelie/packages/-/commit/{revision}
 
 ; *********************
 ; * Bugzilla settings *
