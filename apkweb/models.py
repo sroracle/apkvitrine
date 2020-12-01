@@ -241,8 +241,8 @@ _CROSS_COLUMNS = {
 }
 
 _SORT = {
-    "updated": "updated",
     "name": "name",
+    "updated": "updated",
 }
 
 def build_search(query):
@@ -287,8 +287,7 @@ def build_search(query):
     if vers:
         sql += " GROUP BY packages.name, versions.arch HAVING (MIN(versions.vrank) > 0 OR versions.version IS NULL)"
 
-    sort = _SORT.get(query.get("sort"))
-    if sort:
-        sql += f" ORDER BY {_SORT[query['sort']]}"
+    sort = _SORT.get(query.get("sort"), "name")
+    sql += f" ORDER BY {_SORT[query['sort']]}"
 
     return sql
