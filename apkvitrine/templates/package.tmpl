@@ -74,8 +74,13 @@
   <tr><th>Size</th>        <td>{{ pkg.size|filesizeformat(true) }}</td></tr>
   <tr><th>Updated</th>     <td>{{ pkg.updated }}</td></tr>
   # if pkg.revision
-  # set url = conf["gl_rev_url"].format(revision=pkg.revision)
-  <tr><th>Revision</th>    <td><a href="{{ url }}">{{ pkg.revision }}</a></td></tr>
+  # set revision = pkg.revision
+  # if revision.endswith("-dirty")
+  # set revision = revision.replace("-dirty", "", 1)
+  # set tag = " <span class='tag is-danger'>dirty</span>"
+  # endif
+  # set url = conf["gl_rev_url"].format(revision=revision)
+  <tr><th>Revision</th>    <td><a href="{{ url }}">{{ revision ~ (tag|safe) }}</a></td></tr>
   # endif
   # set url = conf["gl_url"].format(startdir=startdir)
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
