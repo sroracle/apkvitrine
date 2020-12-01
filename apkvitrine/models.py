@@ -32,6 +32,7 @@ _Pkg = collections.namedtuple(
         "license",
         "origin",
         "maintainer",
+        "revision",
         "size",
         "updated",
     ),
@@ -46,7 +47,7 @@ class Pkg(_Pkg, DbModel):
         return cls(
             None, pkg.repo, pkg.name,
             pkg.description, pkg.url, pkg.license,
-            origin, pkg.maintainer, None, None,
+            origin, pkg.maintainer, pkg.commit, None, None,
         )
 
     def get_origin(self, db):

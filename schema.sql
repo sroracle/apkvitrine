@@ -9,6 +9,7 @@ CREATE TABLE packages (
   license TEXT,
   origin INTEGER REFERENCES packages(id),
   maintainer TEXT,
+  revision TEXT,
   size INTEGER,
   updated INTEGER
 );
