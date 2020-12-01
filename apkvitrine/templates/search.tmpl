@@ -22,17 +22,17 @@
 
 # block content
 <div class="columns">
-<div class="column is-one-third">
+<div class="column is-one-third" id="search-controls">
 <form action="{{ branch }}/-/search" method="get">
-	<div class="field is-grouped">
+	<div class="field is-grouped glob">
   {{ i_text("repo", "Repository") }}
   {{ i_text("name", "Name") }}
 	</div>
-	<div class="field is-grouped">
+	<div class="field is-grouped glob">
   {{ i_text("description", "Description") }}
   {{ i_text("url", "URL") }}
 	</div>
-	<div class="field is-grouped">
+	<div class="field is-grouped glob">
   {{ i_text("license", "License") }}
   # call i_select("maintainer", "Maintainer", [])
     <option{{ i_selected_if("maintainer", "") }} value="">Maintainer</option>
@@ -50,13 +50,16 @@
 	in the text fields.
 	</div>
 	</article>
+  <div class="field">
   {{ i_check("cs", "Case-sensitive match with exact globbing") }}
   {{ i_check("subpkgs", "Include subpackages") }}
+  </div>
 	<article class="message">
 	<div class="message-header">
 	Show only packages with:
 	</div>
 	<div class="message-body">
+  <div class="field">
   {{ i_check("dirty", "dirty revisions") }}
   {{ i_check("vers", "version spread") }}
   {{ i_check("deps", "dependency spread") }}
@@ -64,6 +67,7 @@
   {{ i_check("mdeps", "missing dependencies") }}
   {{ i_check("bugs", "open issues") }}
   {{ i_check("merges", "open merge requests") }}
+  </div>
 	</div>
 	</article>
 
