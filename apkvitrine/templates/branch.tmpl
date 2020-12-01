@@ -54,13 +54,13 @@
     # for arch in arches
     #   set apk = versions[pkg.name]|selectattr("arch", "==", arch)|list
     #   if not apk or (apk|first).vrank is none
-    #     set cell = ("no", "&cross;")
+    #     set cell = ("is-danger", "&cross;")
     #   elif (apk|first).vrank
-    #     set cell = ("partial", "~")
+    #     set cell = ("is-warning", "~ " ~ apk.version)
     #   else
-    #     set cell = ("yes", "&check;")
+    #     set cell = ("is-success", "&check; " ~ apk.version)
     #   endif
-    <td class="version cell-{{ cell[0] }}">{{ cell[1]|safe }}</td>
+    <td class="version {{ cell[0] }}">{{ cell[1]|safe }}</td>
     # endfor
   </tr>
   # endfor

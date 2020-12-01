@@ -1,12 +1,10 @@
 nav.breadcrumb a { color: #b5b5b5 }
 nav.breadcrumb .is-active a { color: white }
+.pagination-list li { list-style-type: none }
 
-.pkgver th { text-align: center !important }
+.pkgver th { text-align: center !important; word-break: break-all }
 .version { text-align: center !important }
-.pkgver th { word-break: break-all }
-.cell-yes { background: #DFF0D8; color: black }
-.cell-no { background: #F2DEDE; color: black }
-.cell-partial { background: #FFF176; color: black }
+.version.is-success, .version.is-warning, .version.is-danger { border-color: inherit !important }
 
 #related .column summary {
   font-size: 1.2em;
@@ -21,6 +19,4 @@ nav.breadcrumb .is-active a { color: white }
    */
   display: list-item;
 }
-
 #related .column ul { padding-left: 1.2em }
-.pagination-list li { list-style-type: none }
