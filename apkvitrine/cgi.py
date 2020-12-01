@@ -162,6 +162,8 @@ def page_package(path, _query):
 
     pkg = pkg._replace(updated=format_timestamp(pkg.updated))
     pkg = pkg._replace(origin=pkg.get_origin(db))
+    if pkg.maintainer:
+        pkg = pkg._replace(maintainer=pkg.maintainer.split(" <")[0])
     subpkgs = pkg.get_subpkgs(db)
     if pkg.origin:
         startdir = pkg.repo + "/" + pkg.origin.name
