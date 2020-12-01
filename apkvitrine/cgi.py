@@ -100,8 +100,9 @@ def page_branches(path, _query):
 
     for i, branch in enumerate(branches):
         if not (SRCDIR / f"{branch}.sqlite").is_file():
-            del branches[i]
+            branches[i] = None
 
+    branches = [i for i in branches if i]
     ok()
     response = ENV.get_template("branches.tmpl").render(
         conf=conf["DEFAULT"],
