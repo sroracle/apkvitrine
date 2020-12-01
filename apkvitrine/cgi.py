@@ -194,6 +194,16 @@ def page_package(path, _query):
     print(response)
     save_cache(path, response)
 
+# Don't consider it a complete search if only some combination of the
+# following are given in a query.
+_BORING_TOGGLES = (
+    "page",
+    "cs",
+    "subpkgs",
+    "availability",
+    "sort",
+)
+
 def page_search(path, query):
     branch = path.parts[0]
     db = init_db(branch)
@@ -215,7 +225,7 @@ def page_search(path, query):
 
     ok()
 
-    if any([j for i, j in query.items() if i not in ("page", "subpkgs", "cs", "sort")]):
+    if any([j for i, j in query.items() if i not in _BORING_TOGGLES]):
         searched = True
         new_query = query.copy()
         sql = apkvitrine.models.build_search(new_query)
