@@ -52,13 +52,15 @@ def init_db(branch):
         return None
     try:
         return sqlite3.connect(str(db))
-    except sqlite3.OperationalError as e:
+    except sqlite3.OperationalError:
         error(http.HTTPStatus.INTERNAL_SERVER_ERROR)
         return None
 
-def response(status, *, headers={}, ctype="text/html"):
+def response(status, *, headers=None, ctype="text/html"):
     print("HTTP/1.1", status.value, status.phrase)
     print("Content-type:", ctype + ";", "charset=utf-8")
+    if headers is None:
+        headers = {}
     for header in headers.items():
         print(*header, sep=": ")
     print()
