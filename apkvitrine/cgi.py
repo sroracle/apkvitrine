@@ -56,25 +56,27 @@ def init_db(branch):
         error(http.HTTPStatus.INTERNAL_SERVER_ERROR)
         return None
 
-def response(status, *, headers={}, ctype="text/plain"):
+def response(status, *, headers={}, ctype="text/html"):
     print("HTTP/1.1", status.value, status.phrase)
     print("Content-type:", ctype + ";", "charset=utf-8")
     for header in headers.items():
         print(*header, sep=": ")
     print()
 
-def ok(ctype="text/html"):
-    response(http.HTTPStatus.OK, ctype=ctype)
+def ok(**kwargs):
+    response(http.HTTPStatus.OK, **kwargs)
 
-def error(status, ctype="text/plain"):
-    response(status, ctype=ctype)
+def error(status, **kwargs):
+    if not kwargs.get("ctype"):
+        kwargs["ctype"] = "text/plain"
+    response(status, **kwargs)
     print("Error", status.value, "-", status.phrase)
 
-def notfound():
-    error(http.HTTPStatus.NOT_FOUND)
+def notfound(**kwargs):
+    error(http.HTTPStatus.NOT_FOUND, **kwargs)
 
-def badreq(ctype="text/plain"):
-    error(http.HTTPStatus.BAD_REQUEST, ctype=ctype)
+def badreq(**kwargs):
+    error(http.HTTPStatus.BAD_REQUEST, **kwargs)
 
 def pkg_paginate(conf, query, db, sql):
     query["limit"] = conf.getint("pagination")
@@ -261,8 +263,7 @@ if __name__ == "__main__":
 
     cache = cache_name(path)
     if cache.exists() and not query:
-        print("X-Sendfile:", cache)
-        print()
+        ok(headers={"X-Sendfile": cache})
         sys.exit(0)
 
     for route, handler in ROUTES.items():
