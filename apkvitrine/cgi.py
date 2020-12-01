@@ -237,6 +237,7 @@ def page_home(_path, _query):
 ROUTES = {
     "-/versions": page_branches,
     "*/-/search": page_search,
+    "*/*/*": lambda _path, _query: notfound(),
     "*/*": page_package,
     "*": page_branch,
     ".": page_home,
