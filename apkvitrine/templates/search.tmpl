@@ -9,6 +9,10 @@
 # set title = ["Search for packages in ", conf["distro"], branch]|join(" ")
 # endif
 # set n = pkgs|length
+# set simple = query.get("simple")
+# if simple and not searched
+# set simple = false
+# endif
 
 # block breadcrumb
 <nav class="breadcrumb is-medium">
@@ -21,6 +25,7 @@
 # endblock
 
 # block content
+# if not simple
 <div class="columns">
 <div class="column is-one-third" id="search-controls">
 <form action="{{ branch }}/-/search" method="get">
@@ -89,10 +94,16 @@
  </div>
 </form>
 </div>
+# endif
 
 # if searched
+# if not simple
 <div class="column">
+# endif
 <h3 class="title is-3">Search results</h3>
+# if simple
+{{ quicksearch(branch) }}
+# endif
 # if pkgs
 # if query["page"] == 1
 <div class="notification is-success is-light">
@@ -151,6 +162,8 @@ Displaying the first {{ query["limit"] }}.
 <div class="notification is-danger">
 No packages matched your search terms.
 </div>
+# endif
+# if not simple
 </div>
 # endif
 # endif

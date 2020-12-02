@@ -18,6 +18,28 @@
 # endfor
 # endmacro
 
+# macro quicksearch(branch)
+<form action="{{ branch }}/-/search" method="get">
+ <div class="field is-grouped">
+  <div class="control">
+   <input name="name" class="input" type="text" placeholder="Package name" value="{{ query["name"] }}">
+  </div>
+  <div class="control">
+   <input name="description" class="input" type="text" placeholder="Description" value="{{ query["description"] }}">
+  </div>
+  <div class="control">
+   <input class="button is-primary" type="submit" value="Search">
+  </div>
+  <div class="control">
+   <a class="button is-light" href="{{ branch }}/-/search">Advanced search</a>
+  </div>
+ </div>
+ <input type="hidden" name="simple" value="on">
+ <input type="hidden" name="availability" value="on">
+</form>
+<br>
+# endmacro
+
 # macro i_text(id, name)
 <div class="field">
  <div class="control">

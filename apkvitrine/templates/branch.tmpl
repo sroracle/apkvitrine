@@ -18,23 +18,7 @@
 
 # block content
 <h3 class="title is-3">Recently updated packages</h3>
-<form action="{{ branch }}/-/search" method="get">
- <div class="field is-grouped">
-  <div class="control">
-   <input name="name" class="input" type="text" placeholder="Package name">
-  </div>
-  <div class="control">
-   <input name="description" class="input" type="text" placeholder="Description">
-  </div>
-  <div class="control">
-   <input class="button is-primary" type="submit" value="Search">
-  </div>
-  <div class="control">
-   <a class="button is-light" href="{{ branch }}/-/search">Advanced search</a>
-  </div>
- </div>
-</form>
-<br>
+{{ quicksearch(branch) }}
 <table class="table is-bordered is-striped is-hoverable">
   <tr>
     <th>Name</th>

@@ -197,6 +197,7 @@ def page_package(path, _query):
 # Don't consider it a complete search if only some combination of the
 # following are given in a query.
 _BORING_TOGGLES = (
+    "simple",
     "page",
     "cs",
     "subpkgs",
