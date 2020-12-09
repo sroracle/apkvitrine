@@ -254,20 +254,26 @@ def populate_bugs(conf, db, pkgids):
     for bug in bz_bugs:
         if not bug[field].strip():
             continue
-        sdir = bug[field].split("/", maxsplit=1)
-        if len(sdir) < 2:
-            logging.error(
-                "Bug %d: invalid %r: %s", bug["id"], field, bug[field],
-            )
+        sdirs = bug[field].split(", ")
+        if not any(sdirs):
             continue
-        _repo, pkg = sdir
-        pkgid = pkgids.get(pkg)
-        if not pkgid:
-            logging.warning(
-                "Bug #%d: unknown package %r",
-                bug["id"], bug[field],
-            )
-            continue
+
+        for sdir in sdirs:
+            sdir = sdir.split("/", maxsplit=1)
+            if len(sdir) < 2:
+                logging.error(
+                    "Bug %d: invalid %r: %s", bug["id"], field, bug[field],
+                )
+                continue
+            _repo, pkg = sdir
+            pkgid = pkgids.get(pkg)
+            if not pkgid:
+                logging.warning(
+                    "Bug #%d: unknown package %r",
+                    bug["id"], bug[field],
+                )
+                continue
+            buglinks.append(apkvitrine.models.Buglink(bug["id"], pkgid))
 
         bugs.append(apkvitrine.models.Bug(
             bug["id"], bug["summary"], ",".join(bug["keywords"]),
@@ -275,7 +281,6 @@ def populate_bugs(conf, db, pkgids):
                 bug["last_change_time"], BZ_DATE_FORMAT,
             ).strftime("%s"),
         ))
-        buglinks.append(apkvitrine.models.Buglink(bug["id"], pkgid))
 
     apkvitrine.models.Bug.insertmany(db, bugs)
     apkvitrine.models.Buglink.insertmany(db, buglinks)
