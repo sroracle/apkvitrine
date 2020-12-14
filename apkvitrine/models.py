@@ -115,7 +115,7 @@ class Pkg(_Pkg, DbModel):
         """, (self.id,)).fetchall())
 
         if not reverse:
-            deps += list(db.execute(f"""
+            deps += list(db.execute("""
                 SELECT missingdeps.arch, NULL, missingdeps.dep FROM missingdeps
                 INNER JOIN packages ON packages.id = missingdeps.package
                 WHERE packages.id = ?;
