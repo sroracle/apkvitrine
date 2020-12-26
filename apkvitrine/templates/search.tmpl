@@ -108,7 +108,7 @@
 # if query["page"] == 1
 <div class="notification is-success is-light">
 {{ query["total"] }} packages were found.
-# if query["total"] // query["limit"]
+# if query["total"] // (query["limit"] + 1)
 Displaying the first {{ query["limit"] }}.
 # endif
 </div>
@@ -132,7 +132,7 @@ Displaying the first {{ query["limit"] }}.
 </table>
 </div>
 
-# set last_page = query["total"] // query["limit"] + 1
+# set last_page = query["total"] // (query["limit"] + 1) + 1
 # set page = query["page"]
 # if last_page > 1
 <nav class="pagination is-centered" aria-label="Page controls">
