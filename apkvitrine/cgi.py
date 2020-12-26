@@ -14,10 +14,12 @@ import cgitb        # enable
 cgitb.enable()
 
 import jinja2       # Environment, FileSystemBytecodeCache, PackageLoader
+                    # Markup
 
 SRCDIR = Path(__file__).parent.parent
 CACHE = Path("/var/tmp/apkvitrine")
 sys.path.insert(0, str(SRCDIR))
+import apkvitrine        # DEFAULT
 import apkvitrine.models # build_search, Pkg
 
 ENV = jinja2.Environment(
@@ -117,8 +119,7 @@ def pkg_versions(conf, db, pkgs):
 
     return versions, sorted(repos), sorted(arches)
 
-def page_branches(path, _query):
-    conf = apkvitrine.config()
+def page_branches(conf, path, _query):
     branches = list(conf.sections())
 
     for i, branch in enumerate(branches):
@@ -128,18 +129,18 @@ def page_branches(path, _query):
     branches = [i for i in branches if i]
     ok()
     response = ENV.get_template("branches.tmpl").render(
-        conf=conf["DEFAULT"],
+        conf=conf[apkvitrine.DEFAULT],
         branches=branches,
     )
     print(response)
     save_cache(path, response)
 
-def page_branch(path, query):
+def page_branch(conf, path, query):
     branch = path.parts[0]
     db = init_db(branch)
     if not db:
         return
-    conf = apkvitrine.config(branch)
+    conf = conf[branch]
 
     pkgs = pkg_paginate(conf, query, db, """
         SELECT * FROM packages
@@ -161,12 +162,12 @@ def page_branch(path, query):
     print(response)
     save_cache(path, response)
 
-def page_package(path, _query):
+def page_package(conf, path, _query):
     branch, name = path.parts
     db = init_db(branch)
     if not db:
         return
-    conf = apkvitrine.config(branch)
+    conf = conf[branch]
 
     db.row_factory = apkvitrine.models.Pkg.factory
     pkg = db.execute("""
@@ -213,12 +214,12 @@ _BORING_TOGGLES = (
     "sort",
 )
 
-def page_search(path, query):
+def page_search(conf, path, query):
     branch = path.parts[0]
     db = init_db(branch)
     if not db:
         return
-    conf = apkvitrine.config(branch)
+    conf = conf[branch]
 
     maints = set(db.execute("""
         SELECT DISTINCT(maintainer) FROM packages
@@ -269,8 +270,8 @@ def page_search(path, query):
     if not searched:
         save_cache(path, response)
 
-def page_home(_path, _query):
-    conf = apkvitrine.config("DEFAULT")
+def page_home(conf, _path, _query):
+    conf = conf[apkvitrine.DEFAULT]
     location = ENV.globals["base"] + "/" + conf["default_version"]
     response(
         http.HTTPStatus.TEMPORARY_REDIRECT,
@@ -280,7 +281,7 @@ def page_home(_path, _query):
 ROUTES = {
     "-/versions": page_branches,
     "*/-/search": page_search,
-    "*/*/*": lambda _path, _query: notfound(),
+    "*/*/*": lambda _conf, _path, _query: notfound(),
     "*/*": page_package,
     "*": page_branch,
     ".": page_home,
@@ -307,13 +308,15 @@ if __name__ == "__main__":
         ok(headers={"X-Sendfile": cache})
         sys.exit(0)
 
+    conf = apkvitrine.config()
+
     for route, handler in ROUTES.items():
         if route == ".":
             if route == str(path):
-                handler(path, query)
+                handler(conf, path, query)
                 break
         elif path.match(route):
-            handler(path, query)
+            handler(conf, path, query)
             break
     else:
         notfound()

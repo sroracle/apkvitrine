@@ -5,6 +5,8 @@ import collections  # defaultdict
 import configparser # ConfigParser
 from pathlib import Path
 
+DEFAULT = "@default"
+
 def _config_map(s):
     d = {}
     for i in s.strip().splitlines():
@@ -32,6 +34,7 @@ def _ConfigParser(**kwargs):
             "map": _config_map,
             "maplist": _config_maplist,
         },
+        default_section=DEFAULT,
         **kwargs,
     )
     parser.BOOLEAN_STATES = {"true": True, "false": False}
