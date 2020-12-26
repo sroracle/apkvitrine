@@ -2,6 +2,7 @@
 # Copyright (c) 2020 Max Rees
 # See LICENSE for more information.
 import collections # namedtuple
+import datetime    # datetime, timezone
 
 def _insert(table, columns):
     values = ", ".join("?" for i in columns)
@@ -320,3 +321,53 @@ def build_search(query):
     sql += f" ORDER BY {sort}"
 
     return sql
+
+def gl_strptime(s):
+    # 2020-12-22T23:53:51.993Z
+    s, micro = s.split(".", maxsplit=1)
+    micro = int(micro.replace("Z", "", 1)) * 1000
+    s = s.replace("T", " ", 1)
+    s = datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+    return s.replace(
+        microsecond=micro,
+        tzinfo=datetime.timezone.utc,
+    ).timestamp()
+
+class Builder:
+    __slots__ = (
+        "id",
+        "name",
+        "tags",
+        "online",
+        "active",
+        "seen",
+        "running_job",
+        "success_job",
+        "fail_job",
+    )
+
+    def __init__(self, data):
+        self.id = data["id"]
+        self.name = data["description"]
+        self.tags = data.get("tag_list")
+        self.online = data["online"]
+        self.active = data["active"]
+        self.seen = gl_strptime(data.get("contacted_at"))
+        self.running_job = self.success_job = self.fail_job = None
+
+class Job:
+    __slots__ = (
+        "id",
+        "pipeline",
+        "status",
+        "revision",
+        "title",
+        "finished",
+    )
+
+    def __init__(self, data):
+        self.id = data["id"]
+        self.status = data["status"]
+        self.revision = data["commit"]["id"]
+        self.title = data["commit"]["title"]
+        self.finished = gl_strptime(data["finished_at"])

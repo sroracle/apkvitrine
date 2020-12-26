@@ -53,6 +53,15 @@ pagination = 25
 ; Required: default OS version
 default_version = current
 
+; Optional: enable builders page
+;[@builders]
+; Optional: override Gitlab API endpoint to query builder status
+; ("runners" API endpoint)
+;gl_api_url = https://code.foxkit.us/api/v4/projects/76
+; Required for builders page: Gitlab API token (PRIVATE-TOKEN) that can
+; view the above project's runners list
+;gl_api_token = YOUR-TOKEN-HERE
+
 [current]
 ; =========================================================
 ; *******************
@@ -74,8 +83,6 @@ repology_link = https://repology.org/tools/project-by?repo=adelie_current&name_t
 repology_badge = https://repology.org/tools/project-by?repo=adelie_current&name_type=binname&target_page=badge_version_for_repo&name=
 
 [1.0-beta4]
-; =========================================================
-; Actually a tag. just demontrating
 gl_branch = 1.0-BETA4
 gl_url = https://code.foxkit.us/adelie/packages/-/tree/1.0-BETA4/{startdir}
 

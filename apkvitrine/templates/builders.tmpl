@@ -1,0 +1,78 @@
+## vi: ft=jinja:
+## SPDX-License-Identifier: NCSA
+## Copyright (c) 2020 Max Rees
+## See LICENSE for more information.
+# extends "base.tmpl"
+# set title = [conf["distro"], "builder status"]|join(" ")
+
+# block breadcrumb
+<nav class="breadcrumb is-medium">
+ <ul>
+  <li><a href="-/versions">packages</a></li>
+  <li class="is-active"><a href="-/builders">builders</a></li>
+ </ul>
+</nav>
+# endblock
+
+# macro job_info(job)
+# if job
+<a href="https://code.foxkit.us/sroracle/packages/-/jobs/{{ job.id }}">
+{{ "#" ~ job.id  }}
+<br>
+{{ job.title }}
+<br>
+{{ job.finished|datetime }}
+</a>
+# endif
+# endmacro
+
+# block content
+<div class="table-container">
+<table class="builders table is-bordered is-striped is-hoverable">
+ <tr>
+  <th>Name</th>
+  <th>Status</th>
+  <th>Running</th>
+  <th>Last success</th>
+  <th>Last failure</th>
+ </tr>
+ # for builder in builders|sort(attribute="name")
+ <tr>
+  <td>
+   {{ builder.name }}
+   # for tag in builder.tags|sort
+   <br>
+   <span class="tag is-info">{{ tag }}</span>
+   # endfor
+  </td>
+  <td>
+   # if builder.online
+   <span class="tag is-success">online</span>
+   # else
+   <span class="tag is-danger">offline</span>
+   # endif
+   # if not builder.active
+   <span class="tag is-warning">paused</span>
+   # endif
+   <br>
+   {{ builder.seen|datetime }}
+  </td>
+  <td>
+  {{ job_info(builder.running_job) }}
+  <td>
+  {{ job_info(builder.success_job) }}
+  <td>
+  {{ job_info(builder.fail_job) }}
+  </td>
+ </tr>
+ # endfor
+</table>
+</div>
+
+# if cached is not none
+<p>
+Last updated {{ cached|datetime }}.
+<a href="-/builders?purge=1">Click here to update.</a>
+</p>
+# endif
+# endblock

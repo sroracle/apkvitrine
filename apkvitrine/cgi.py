@@ -4,11 +4,14 @@
 # See LICENSE for more information.
 import datetime     # datetime, timezone
 import http         # HTTPStatus
+import json         # load
 import os           # environ
 import shutil       # copyfileobj
 import sqlite3      # connect, OperationalError
 import sys          # exit, path, stdout
+import time         # time
 import urllib.parse # parse_qs, urlencode
+import urllib.request # Request, urlopen
 from pathlib import Path
 
 import cgitb        # enable
@@ -21,7 +24,7 @@ SRCDIR = Path(__file__).parent.parent
 CACHE = Path("/var/tmp/apkvitrine")
 CACHE_ENABLED = CACHE.is_dir()
 sys.path.insert(0, str(SRCDIR))
-import apkvitrine        # DEFAULT
+import apkvitrine        # BUILDERS, DEFAULT
 import apkvitrine.models # build_search, Pkg
 
 ENV = jinja2.Environment(
@@ -97,6 +100,12 @@ def notfound(**kwargs):
 def badreq(**kwargs):
     error(http.HTTPStatus.BAD_REQUEST, **kwargs)
 
+def redirect(location):
+    response(
+        http.HTTPStatus.TEMPORARY_REDIRECT,
+        headers={"Location": ENV.globals["base"] + "/" + str(location)},
+    )
+
 def pkg_paginate(conf, query, db, sql):
     query["limit"] = conf.getint("pagination")
     try:
@@ -124,8 +133,71 @@ def pkg_versions(conf, db, pkgs):
 
     return versions, sorted(repos), sorted(arches)
 
+def gl_runner_info(token, endpoint, api):
+    request = urllib.request.Request(
+        url=f"{endpoint}/{api}",
+        method="GET",
+        headers={"PRIVATE-TOKEN": token},
+    )
+    with urllib.request.urlopen(request) as response:
+        return json.load(response)
+
+def page_builders(conf, path, query):
+    if apkvitrine.BUILDERS not in conf:
+        notfound()
+        return
+    bconf = conf[apkvitrine.BUILDERS]
+
+    builders = gl_runner_info(
+        bconf["gl_api_token"],
+        bconf["gl_api_url"],
+        "runners",
+    )
+    builders = [i["id"] for i in builders]
+
+    for i, builder in enumerate(builders):
+        builders[i] = apkvitrine.models.Builder(gl_runner_info(
+            bconf["gl_api_token"],
+            bconf["gl_api_url"],
+            f"../../runners/{builder}",
+        ))
+
+        jobs = gl_runner_info(
+            bconf["gl_api_token"],
+            bconf["gl_api_url"],
+            f"../../runners/{builder}/jobs?status=running&order_by=id&per_page=1",
+        )
+        if jobs:
+            builders[i].running_job = apkvitrine.models.Job(jobs[0])
+
+        jobs = gl_runner_info(
+            bconf["gl_api_token"],
+            bconf["gl_api_url"],
+            f"../../runners/{builder}/jobs?status=success&order_by=id&per_page=1",
+        )
+        if jobs:
+            builders[i].success_job = apkvitrine.models.Job(jobs[0])
+
+        jobs = gl_runner_info(
+            bconf["gl_api_token"],
+            bconf["gl_api_url"],
+            f"../../runners/{builder}/jobs?status=failed&order_by=id&per_page=1",
+        )
+        if jobs:
+            builders[i].fail_job = apkvitrine.models.Job(jobs[0])
+
+    ok()
+    response = ENV.get_template("builders.tmpl").render(
+        conf=conf[apkvitrine.DEFAULT],
+        builders=builders,
+        cached=time.time() if CACHE_ENABLED else None,
+    )
+    print(response)
+    save_cache(path, response)
+
 def page_branches(conf, path, _query):
     branches = list(conf.sections())
+    show_builders = apkvitrine.BUILDERS in branches
 
     for i, branch in enumerate(branches):
         if not (SRCDIR / f"{branch}.sqlite").is_file():
@@ -136,6 +208,7 @@ def page_branches(conf, path, _query):
     response = ENV.get_template("branches.tmpl").render(
         conf=conf[apkvitrine.DEFAULT],
         branches=branches,
+        show_builders=show_builders,
     )
     print(response)
     save_cache(path, response)
@@ -217,6 +290,7 @@ _BORING_TOGGLES = (
     "subpkgs",
     "availability",
     "sort",
+    "purge",
 )
 
 def page_search(conf, path, query):
@@ -276,15 +350,11 @@ def page_search(conf, path, query):
         save_cache(path, response)
 
 def page_home(conf, _path, _query):
-    conf = conf[apkvitrine.DEFAULT]
-    location = ENV.globals["base"] + "/" + conf["default_version"]
-    response(
-        http.HTTPStatus.TEMPORARY_REDIRECT,
-        headers={"Location": location},
-    )
+    redirect(conf[apkvitrine.DEFAULT]["default_version"])
 
 ROUTES = {
     "-/versions": page_branches,
+    "-/builders": page_builders,
     "*/-/search": page_search,
     "*/*/*": lambda _conf, _path, _query: notfound(),
     "*/*": page_package,
@@ -309,14 +379,18 @@ if __name__ == "__main__":
         sys.exit(0)
 
     cache = cache_name(path)
-    if cache.exists() and not query:
-        ok()
-        with cache.open() as cached:
-            shutil.copyfileobj(cached, sys.stdout)
-        sys.exit(0)
+    if cache.exists():
+        if not query:
+            ok()
+            with cache.open() as cached:
+                shutil.copyfileobj(cached, sys.stdout)
+            sys.exit(0)
+        elif query.get("purge") == "1":
+            cache.unlink()
+            redirect(path)
+            sys.exit(0)
 
     conf = apkvitrine.config()
-
     for route, handler in ROUTES.items():
         if route == ".":
             if route == str(path):

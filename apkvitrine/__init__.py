@@ -5,6 +5,7 @@ import collections  # defaultdict
 import configparser # ConfigParser
 from pathlib import Path
 
+BUILDERS = "@builders"
 DEFAULT = "@default"
 
 def _config_map(s):

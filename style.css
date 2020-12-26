@@ -30,3 +30,8 @@ nav.breadcrumb .is-active a { color: white }
 #search-controls .glob { margin-bottom: 0.5rem }
 #search-controls .glob > .field { margin-bottom: 0 }
 #search-controls .glob .control { padding: 0 0.25rem 0 0.25rem }
+
+.builders th, .builders td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
