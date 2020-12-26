@@ -4,7 +4,7 @@ nav.breadcrumb .is-active a { color: white }
 
 .version { text-align: center !important; vertical-align: middle !important }
 .version.is-success, .version.is-warning, .version.is-danger {
-  border-color: inherit !important
+  border-color: #dbdbdb !important
 }
 
 .pkgver th, #pkgdetails th, #related .column summary{
