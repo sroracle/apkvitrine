@@ -30,6 +30,21 @@ ENV = jinja2.Environment(
     line_comment_prefix="##",
 )
 
+def datetime_filter(timestamp):
+    dt = datetime.datetime.fromtimestamp(
+        timestamp, datetime.timezone.utc,
+    ).astimezone()
+    full = dt.strftime("%c %Z")
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    rel = now - dt
+    rel -= datetime.timedelta(microseconds=rel.microseconds)
+    rel = str(rel) + " ago"
+    result = f"<span class='datetime' title='{full}'>{rel}</span>"
+    return jinja2.Markup(result)
+
+ENV.filters["datetime"] = datetime_filter
+
 def cache_name(path):
     return CACHE / path.parent / (path.name + ".html")
 
@@ -38,11 +53,6 @@ def save_cache(path, response):
         cache = cache_name(path)
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(response)
-
-def format_timestamp(timestamp):
-    return datetime.datetime.fromtimestamp(
-        timestamp, datetime.timezone.utc,
-    ).astimezone().strftime("%c %Z")
 
 def init_db(branch):
     assert "/" not in branch
@@ -99,9 +109,8 @@ def pkg_versions(conf, db, pkgs):
     repos = set()
     arches = set()
 
-    for i, pkg in enumerate(pkgs):
+    for pkg in pkgs:
         repos.add(pkg.repo)
-        pkgs[i] = pkg._replace(updated=format_timestamp(pkg.updated))
         versions[pkg.name] = pkg.get_versions(db)
     for repo in repos:
         arches.update(conf.getmaplist("repos")[repo])
@@ -167,7 +176,6 @@ def page_package(path, _query):
         notfound()
         return
 
-    pkg = pkg._replace(updated=format_timestamp(pkg.updated))
     pkg = pkg._replace(origin=pkg.get_origin(db))
     if pkg.maintainer:
         pkg = pkg._replace(maintainer=pkg.maintainer.split(" <")[0])
