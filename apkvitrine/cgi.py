@@ -5,8 +5,9 @@
 import datetime     # datetime, timezone
 import http         # HTTPStatus
 import os           # environ
+import shutil       # copyfileobj
 import sqlite3      # connect, OperationalError
-import sys          # exit, path
+import sys          # exit, path, stdout
 import urllib.parse # parse_qs, urlencode
 from pathlib import Path
 
@@ -305,7 +306,9 @@ if __name__ == "__main__":
 
     cache = cache_name(path)
     if cache.exists() and not query:
-        ok(headers={"X-Sendfile": cache})
+        ok()
+        with cache.open() as cached:
+            shutil.copyfileobj(cached, sys.stdout)
         sys.exit(0)
 
     conf = apkvitrine.config()
