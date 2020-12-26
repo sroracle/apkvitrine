@@ -19,6 +19,7 @@
 # block content
 <h3 class="title is-3">Recently updated packages</h3>
 {{ quicksearch(branch) }}
+<div class="table-container">
 <table class="table is-bordered is-striped is-hoverable">
   <tr>
     <th>Name</th>
@@ -39,6 +40,7 @@
   </tr>
   # endfor
 </table>
+</div>
 
 # set last_page = query["total"] // query["limit"] + 1
 # set page = query["page"]

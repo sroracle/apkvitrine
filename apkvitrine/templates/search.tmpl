@@ -113,6 +113,7 @@ Displaying the first {{ query["limit"] }}.
 # endif
 </div>
 # endif
+<div class="table-container">
 <table class="table is-bordered is-striped is-hoverable">
  <tr>
   <th>Name</th>
@@ -129,6 +130,7 @@ Displaying the first {{ query["limit"] }}.
  </tr>
  # endfor
 </table>
+</div>
 
 # set last_page = query["total"] // query["limit"] + 1
 # set page = query["page"]

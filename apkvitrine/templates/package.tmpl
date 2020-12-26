@@ -29,6 +29,7 @@
  </a>
 </p>
 # endif
+<div class="table-container">
 <table class="table is-bordered pkgver">
   <tr>
     # for arch in arches
@@ -49,8 +50,10 @@
     # endfor
   </tr>
 </table>
+</div>
 
 <h3 class="title is-3">Details for version {{ newest }}</h3>
+<div class="table-container">
 <table class="table is-bordered" id="pkgdetails">
   <tr><th>Description</th> <td>{{ pkg.description }}</td></tr>
   # if pkg.url
@@ -85,6 +88,7 @@
   # set url = conf["gl_url"].format(startdir=startdir)
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
 </table>
+</div>
 
 <div id="related" class="columns is-desktop">
   <div class="column">
