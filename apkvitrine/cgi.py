@@ -19,6 +19,7 @@ import jinja2       # Environment, FileSystemBytecodeCache, PackageLoader
 
 SRCDIR = Path(__file__).parent.parent
 CACHE = Path("/var/tmp/apkvitrine")
+CACHE_ENABLED = CACHE.is_dir()
 sys.path.insert(0, str(SRCDIR))
 import apkvitrine        # DEFAULT
 import apkvitrine.models # build_search, Pkg
@@ -39,11 +40,14 @@ def datetime_filter(timestamp):
     ).astimezone()
     full = dt.strftime("%c %Z")
 
-    now = datetime.datetime.now(datetime.timezone.utc)
-    rel = now - dt
-    rel -= datetime.timedelta(microseconds=rel.microseconds)
-    rel = str(rel) + " ago"
-    result = f"<span class='datetime' title='{full}'>{rel}</span>"
+    if CACHE_ENABLED:
+        result = f"<span class='datetime'>{full}</span>"
+    else:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        rel = now - dt
+        rel -= datetime.timedelta(microseconds=rel.microseconds)
+        rel = str(rel) + " ago"
+        result = f"<span class='datetime' title='{full}'>{rel}</span>"
     return jinja2.Markup(result)
 
 ENV.filters["datetime"] = datetime_filter
@@ -52,7 +56,7 @@ def cache_name(path):
     return CACHE / path.parent / (path.name + ".html")
 
 def save_cache(path, response):
-    if CACHE.is_dir():
+    if CACHE_ENABLED:
         cache = cache_name(path)
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(response)
