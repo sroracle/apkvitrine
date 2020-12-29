@@ -290,12 +290,15 @@ def page_home(app):
     app.redirect(app.conf[apkvitrine.DEFAULT]["default_version"])
     return []
 
+def page_notfound(app):
+    return app.notfound()
+
 class APKVitrineApp:
     routes = {
         "-/versions": page_branches,
         "-/builders": page_builders,
         "*/-/search": page_search,
-        "*/*/*": lambda app: notfound(app),
+        "*/*/*": page_notfound,
         "*/*": page_package,
         "*": page_branch,
         ".": page_home,
@@ -419,7 +422,7 @@ class APKVitrineApp:
     def ok(self, **kwargs):
         self.response(http.HTTPStatus.OK, **kwargs)
 
-    def badreq(**kwargs):
+    def badreq(self, **kwargs):
         return self.error(http.HTTPStatus.BAD_REQUEST, **kwargs)
 
     def redirect(self, location):
