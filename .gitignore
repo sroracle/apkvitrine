@@ -1,5 +1,8 @@
-*.sqlite
 *.ini
+*.sh
+*.sqlite
+archive
+target
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
