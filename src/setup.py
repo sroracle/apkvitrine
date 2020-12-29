@@ -52,8 +52,8 @@ distutils.core.setup(
             ["config.ini.in"],
         ),
         (
-            str(webdir),
-            glob.glob("webapp/style.css"),
+            str(webdir / "static"),
+            glob.glob("webapp/static/*"),
         ),
     ],
 )

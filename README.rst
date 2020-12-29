@@ -34,26 +34,28 @@ for traditional CGI usage under the URL ``/pkg``::
 
     $HTTP["url"] =~ "^/pkg(/|$)" {
       alias.url += (
-          "/pkg/style.css" => "/path/to/apkvitrine/style.css",
-          "/pkg" => "/path/to/apkvitrine/cgi.py",
+          "/pkg/static" => "/usr/share/webapps/apkvitrine/static",
+          "/pkg" => "/usr/share/webapps/apkvitrine/apkvitrine.cgi",
       )
 
-      cgi.assign = (".py" => "/path/to/apkvitrine/cgi.py")
+      cgi.assign = ("apkvitrine.cgi" => "")
     }
 
 Here's FastCGI::
 
+    var.apkvitrine_dir = "/usr/share/webapps/apkvitrine/"
     $HTTP["url"] =~ "^/pkg(/|$)" {
       alias.url += (
-          "/pkg/style.css" => "/path/to/apkvitrine/style.css",
-          "/pkg" => "/path/to/apkvitrine/cgi.py",
+          "/pkg/static" => var.apkvitrine_dir + "static",
+          "/pkg" => var.apkvitrine_dir + "apkvitrine.cgi",
       )
 
-      fastcgi.server += ( ".py" => ( "apkvitrine" => (
+      fastcgi.server += ( "apkvitrine.cgi" => ( "apkvitrine" => (
+          "docroot" => var.apkvitrine_dir,
           # Replace var.run_dir with wherever lighttpd can make a
           # socket.
           "socket" => var.run_dir + "apkvitrine.sock",
-          "bin-path" => "/path/to/apkvitrine/cgi.py",
+          "bin-path" => var.apkvitrine_dir + "apkvitrine.cgi",
           # Tune to your requirements.
           "max-procs" => 5,
       ) ) )
