@@ -14,17 +14,17 @@ class APK_VER(enum.IntFlag):
     FUZZY = 8
 
 APK_OPS = {
-   ">=": APK_VER.GREATER | APK_VER.EQUAL,
-   "<=": APK_VER.LESS | APK_VER.EQUAL,
-   ">~": APK_VER.GREATER | APK_VER.EQUAL,
-   "<~": APK_VER.LESS | APK_VER.EQUAL,
-   ">": APK_VER.GREATER,
-   "<": APK_VER.LESS,
-   "=": APK_VER.EQUAL,
-   "~": APK_VER.EQUAL,
+    ">=": APK_VER.GREATER | APK_VER.EQUAL,
+    "<=": APK_VER.LESS | APK_VER.EQUAL,
+    ">~": APK_VER.GREATER | APK_VER.EQUAL,
+    "<~": APK_VER.LESS | APK_VER.EQUAL,
+    ">": APK_VER.GREATER,
+    "<": APK_VER.LESS,
+    "=": APK_VER.EQUAL,
+    "~": APK_VER.EQUAL,
 }
 
-class _apk_blob_t(ctypes.Structure):
+class _apk_blob_t(ctypes.Structure): # pylint: disable=too-few-public-methods
     _fields_ = [
         ("len", ctypes.c_long),
         ("ptr", ctypes.c_char_p),

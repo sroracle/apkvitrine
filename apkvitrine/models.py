@@ -333,7 +333,7 @@ def gl_strptime(s):
         tzinfo=datetime.timezone.utc,
     ).timestamp()
 
-class Builder:
+class Builder: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     __slots__ = (
         "id",
         "name",
@@ -355,7 +355,7 @@ class Builder:
         self.seen = gl_strptime(data.get("contacted_at"))
         self.running_job = self.success_job = self.fail_job = None
 
-class Job:
+class Job: # pylint: disable=too-few-public-methods
     __slots__ = (
         "id",
         "pipeline",

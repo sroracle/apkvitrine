@@ -287,13 +287,12 @@ def page_search(app):
     return [page]
 
 def page_home(app):
-    app.redirect(app.conf[apkvitrine.DEFAULT]["default_version"])
-    return []
+    return app.redirect(app.conf[apkvitrine.DEFAULT]["default_version"])
 
 def page_notfound(app):
     return app.notfound()
 
-class APKVitrineApp:
+class APKVitrineApp: # pylint: disable=too-many-instance-attributes
     routes = {
         "-/versions": page_branches,
         "-/builders": page_builders,
@@ -314,10 +313,9 @@ class APKVitrineApp:
         "jinja",
         "path",
         "query",
-        "request",
     )
 
-    def __init__(self, cache=None):
+    def __init__(self):
         self.jinja = jinja2.Environment(
             loader=jinja2.PackageLoader("apkvitrine", "templates"),
             autoescape=True,
@@ -339,6 +337,8 @@ class APKVitrineApp:
 
         self.data = Path(self.conf[apkvitrine.DEFAULT]["data_dir"])
 
+        self._response = self.base = self.env = self.path = self.query = None
+
     def handle(self, env, response):
         self.env = env
         self._response = response
@@ -348,14 +348,12 @@ class APKVitrineApp:
         self.query = urllib.parse.parse_qs(env.get("QUERY_STRING", ""))
         self.query = {i: j[-1] for i, j in self.query.items()}
 
+        self.jinja.globals["base"] = self.base
         # Used for pagination on search pages so that "page=x" isn't repeated
-        self.request = str(self.base / self.path) + "?"
-        self.request += urllib.parse.urlencode(
+        self.jinja.globals["request"] = str(self.base / self.path) + "?"
+        self.jinja.globals["request"] += urllib.parse.urlencode(
             {i: j for i, j in self.query.items() if i != "page"}
         )
-
-        self.jinja.globals["base"]  = self.base
-        self.jinja.globals["request"] = self.request
 
         page = self.cached_page()
         if page is not None:
@@ -385,11 +383,10 @@ class APKVitrineApp:
             if not self.query:
                 self.ok()
                 return [cache.read_bytes()]
-            elif self.query.get("purge") == "1":
+            if self.query.get("purge") == "1":
                 if (time.time() - cache.stat().st_mtime) > 600:
                     cache.unlink()
-                self.redirect(self.base / self.path)
-                return []
+                return self.redirect(self.base / self.path)
 
         return None
 
@@ -430,6 +427,7 @@ class APKVitrineApp:
             http.HTTPStatus.TEMPORARY_REDIRECT,
             headers=[("Location", str(self.base / location))],
         )
+        return []
 
 if __name__ == "__main__":
     app = APKVitrineApp()
