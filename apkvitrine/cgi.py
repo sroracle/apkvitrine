@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # SPDX-License-Identifier: NCSA
 # Copyright (c) 2020 Max Rees
 # See LICENSE for more information.
@@ -13,6 +12,7 @@ from pathlib import Path
 
 import flup.server.fcgi as flup # WSGIServer
 import jinja2 # Environment, FileSystemBytecodeCache, Markup, PackageLoader
+              # environmentfilter
 
 import apkvitrine        # BUILDERS, config, DEFAULT
 import apkvitrine.models # build_search, Pkg
@@ -317,7 +317,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
 
     def __init__(self):
         self.jinja = jinja2.Environment(
-            loader=jinja2.PackageLoader("apkvitrine", "templates"),
+            loader=jinja2.PackageLoader("apkvitrine", "data"),
             autoescape=True,
             trim_blocks=True,
             bytecode_cache=jinja2.FileSystemBytecodeCache(),
@@ -429,6 +429,9 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
         )
         return []
 
-if __name__ == "__main__":
+def main():
     app = APKVitrineApp()
     flup.WSGIServer(app.handle).run()
+
+if __name__ == "__main__":
+    main()

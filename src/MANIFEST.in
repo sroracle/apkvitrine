@@ -1,0 +1,4 @@
+graft src
+include LICENSE
+include Makefile
+include README.rst

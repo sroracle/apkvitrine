@@ -5,8 +5,11 @@ import collections  # defaultdict
 import configparser # ConfigParser
 from pathlib import Path
 
+VERSION = "0.1"
 BUILDERS = "@builders"
 DEFAULT = "@default"
+
+SYSCONFDIR = Path(__file__).parent.parent
 
 def _config_map(s):
     d = {}
@@ -43,8 +46,7 @@ def _ConfigParser(**kwargs):
 
 def config(version=None):
     config = _ConfigParser()
-    files = sorted(Path("/etc/apkvitrine").glob("*.ini"))
-    files.append(Path(__file__).parent.parent / "config.ini")
+    files = sorted(SYSCONFDIR.glob("*.ini"))
     config.read(files)
     if version:
         return config[version]

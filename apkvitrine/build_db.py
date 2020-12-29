@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # SPDX-License-Identifier: NCSA
 # Copyright (c) 2020 Max Rees
 # See LICENSE for more information.
@@ -7,6 +6,7 @@ import collections    # defaultdict
 import datetime       # datetime
 import json           # load
 import logging
+import pkgutil        # get_data
 import sqlite3        # connect
 import urllib.parse   # urlencode
 import urllib.request # Request, urlopen
@@ -26,7 +26,7 @@ def init_db(name):
         Path(name).unlink()
     except FileNotFoundError:
         pass
-    schema = Path("schema.sql").read_text().strip()
+    schema = pkgutil.get_data("apkvitrine", "data/schema.sql").decode("utf-8")
     db = sqlite3.connect(str(name))
     db.executescript(schema)
     return db
