@@ -337,20 +337,26 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
 
         self.data = Path(self.conf[apkvitrine.DEFAULT]["data_dir"])
 
-        self._response = self.base = self.env = self.path = self.query = None
+        self._response = self.env = None
+        self.base = self.path = self.query = None
+
+    def get_host(self):
+        host = self.env.get("HTTP_HOST", "")
+        return f"//{host}/" if host else ""
 
     def handle(self, env, response):
         self.env = env
         self._response = response
 
-        self.base = Path(env.get("SCRIPT_NAME", ""))
+        self.base = self.get_host() + env.get("SCRIPT_NAME", "").lstrip("/")
+        self.base = self.base.rstrip("/") + "/"
         self.path = Path(env.get("PATH_INFO", "").lstrip("/"))
         self.query = urllib.parse.parse_qs(env.get("QUERY_STRING", ""))
         self.query = {i: j[-1] for i, j in self.query.items()}
 
         self.jinja.globals["base"] = self.base
         # Used for pagination on search pages so that "page=x" isn't repeated
-        self.jinja.globals["request"] = str(self.base / self.path) + "?"
+        self.jinja.globals["request"] = self.base + str(self.path) + "?"
         self.jinja.globals["request"] += urllib.parse.urlencode(
             {i: j for i, j in self.query.items() if i != "page"}
         )
@@ -386,7 +392,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
             if self.query.get("purge") == "1":
                 if (time.time() - cache.stat().st_mtime) > 600:
                     cache.unlink()
-                return self.redirect(self.base / self.path)
+                return self.redirect(self.path)
 
         return None
 
@@ -425,7 +431,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
     def redirect(self, location):
         self.response(
             http.HTTPStatus.TEMPORARY_REDIRECT,
-            headers=[("Location", str(self.base / location))],
+            headers=[("Location", self.base + str(location))],
         )
         return []
 
