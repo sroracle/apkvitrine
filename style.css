@@ -2,7 +2,11 @@ nav.breadcrumb a { color: #b5b5b5 }
 nav.breadcrumb .is-active a { color: white }
 .pagination-list li { list-style-type: none }
 
-.version { text-align: center !important; vertical-align: middle !important }
+.version {
+  text-align: center !important;
+  vertical-align: middle !important;
+  font-weight: bold;
+}
 .version.is-success, .version.is-warning, .version.is-danger {
   border-color: #dbdbdb !important
 }
