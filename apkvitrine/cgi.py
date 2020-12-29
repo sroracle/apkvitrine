@@ -368,7 +368,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
         if not self.cache:
             return
         if not path:
-            path = app.path
+            path = self.path
 
         cache = self.cache_name(path)
         cache.parent.mkdir(parents=True, exist_ok=True)
