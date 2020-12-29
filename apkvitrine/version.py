@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # SPDX-License-Identifier: NCSA
 # Copyright (c) 2018-2020 Max Rees
 # See LICENSE for more information.
@@ -30,7 +29,8 @@ class _apk_blob_t(ctypes.Structure): # pylint: disable=too-few-public-methods
         ("ptr", ctypes.c_char_p),
     ]
 
-    def __init__(self, s): # pylint: disable=super-init-not-called
+    def __init__(self, s):
+        super().__init__()
         s = s.encode("utf-8")
         self.len = len(s)
         self.ptr = ctypes.c_char_p(s)

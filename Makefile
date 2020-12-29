@@ -23,9 +23,6 @@ CLEAN_TARGETS = \
 	dist \
 	target
 
-CGI.PY = site-packages/apkvitrine/cgi.py
-BUILD_DB.PY = site-packages/apkvitrine/build_db.py
-
 .PHONY: all
 all:
 	$(SETUP.PY) build
