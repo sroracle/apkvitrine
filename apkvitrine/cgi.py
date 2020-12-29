@@ -5,45 +5,26 @@
 import datetime     # datetime, timezone
 import http         # HTTPStatus
 import json         # load
-import os           # environ
-import shutil       # copyfileobj
 import sqlite3      # connect, OperationalError
-import sys          # exit, path, stdout
 import time         # time
 import urllib.parse # parse_qs, urlencode
 import urllib.request # Request, urlopen
 from pathlib import Path
 
-import cgitb        # enable
-cgitb.enable()
+import flup.server.fcgi as flup # WSGIServer
+import jinja2 # Environment, FileSystemBytecodeCache, Markup, PackageLoader
 
-import jinja2       # Environment, FileSystemBytecodeCache, PackageLoader
-                    # Markup
-
-SRCDIR = Path(__file__).parent.parent
-CACHE = Path("/var/tmp/apkvitrine")
-CACHE_ENABLED = CACHE.is_dir()
-sys.path.insert(0, str(SRCDIR))
-import apkvitrine        # BUILDERS, DEFAULT
+import apkvitrine        # BUILDERS, config, DEFAULT
 import apkvitrine.models # build_search, Pkg
 
-ENV = jinja2.Environment(
-    loader=jinja2.PackageLoader("apkvitrine", "templates"),
-    autoescape=True,
-    trim_blocks=True,
-    bytecode_cache=jinja2.FileSystemBytecodeCache(),
-    extensions=["jinja2.ext.loopcontrols"],
-    line_statement_prefix="#",
-    line_comment_prefix="##",
-)
-
-def datetime_filter(timestamp):
+@jinja2.environmentfilter
+def datetime_filter(env, timestamp):
     dt = datetime.datetime.fromtimestamp(
         timestamp, datetime.timezone.utc,
     ).astimezone()
     full = dt.strftime("%c %Z")
 
-    if CACHE_ENABLED:
+    if env.globals["cache"]:
         result = f"<span class='datetime'>{full}</span>"
     else:
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -53,58 +34,16 @@ def datetime_filter(timestamp):
         result = f"<span class='datetime' title='{full}'>{rel}</span>"
     return jinja2.Markup(result)
 
-ENV.filters["datetime"] = datetime_filter
-
-def cache_name(path):
-    return CACHE / path.parent / (path.name + ".html")
-
-def save_cache(path, response):
-    if CACHE_ENABLED:
-        cache = cache_name(path)
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(response)
-
-def init_db(branch):
-    assert "/" not in branch
-    db = SRCDIR / f"{branch}.sqlite"
+def init_db(app, branch):
+    if "/" in branch:
+        raise ValueError("branch may not contain '/'")
+    db = app.data / f"{branch}.sqlite"
     if not db.is_file():
-        notfound()
         return None
     try:
         return sqlite3.connect(str(db))
     except sqlite3.OperationalError:
-        error(http.HTTPStatus.INTERNAL_SERVER_ERROR)
         return None
-
-def response(status, *, headers=None, ctype="text/html"):
-    print("HTTP/1.1", status.value, status.phrase)
-    print("Content-type:", ctype + ";", "charset=utf-8")
-    if headers is None:
-        headers = {}
-    for header in headers.items():
-        print(*header, sep=": ")
-    print()
-
-def ok(**kwargs):
-    response(http.HTTPStatus.OK, **kwargs)
-
-def error(status, **kwargs):
-    if not kwargs.get("ctype"):
-        kwargs["ctype"] = "text/plain"
-    response(status, **kwargs)
-    print("Error", status.value, "-", status.phrase)
-
-def notfound(**kwargs):
-    error(http.HTTPStatus.NOT_FOUND, **kwargs)
-
-def badreq(**kwargs):
-    error(http.HTTPStatus.BAD_REQUEST, **kwargs)
-
-def redirect(location):
-    response(
-        http.HTTPStatus.TEMPORARY_REDIRECT,
-        headers={"Location": ENV.globals["base"] + "/" + str(location)},
-    )
 
 def pkg_paginate(conf, query, db, sql):
     query["limit"] = conf.getint("pagination")
@@ -142,11 +81,10 @@ def gl_runner_info(token, endpoint, api):
     with urllib.request.urlopen(request) as response:
         return json.load(response)
 
-def page_builders(conf, path, query):
-    if apkvitrine.BUILDERS not in conf:
-        notfound()
-        return
-    bconf = conf[apkvitrine.BUILDERS]
+def page_builders(app):
+    if apkvitrine.BUILDERS not in app.conf:
+        return app.notfound()
+    bconf = app.conf[apkvitrine.BUILDERS]
 
     builders = gl_runner_info(
         bconf["gl_api_token"],
@@ -186,74 +124,73 @@ def page_builders(conf, path, query):
         if jobs:
             builders[i].fail_job = apkvitrine.models.Job(jobs[0])
 
-    ok()
-    response = ENV.get_template("builders.tmpl").render(
-        conf=conf[apkvitrine.DEFAULT],
+    app.ok()
+    page = app.jinja.get_template("builders.tmpl").render(
+        conf=app.conf[apkvitrine.DEFAULT],
         builders=builders,
-        cached=time.time() if CACHE_ENABLED else None,
-    )
-    print(response)
-    save_cache(path, response)
+        cached=time.time() if app.cache else None,
+    ).encode("utf-8")
+    app.save_cache(page)
+    return [page]
 
-def page_branches(conf, path, _query):
-    branches = list(conf.sections())
+def page_branches(app):
+    branches = list(app.conf.sections())
     show_builders = apkvitrine.BUILDERS in branches
 
     for i, branch in enumerate(branches):
-        if not (SRCDIR / f"{branch}.sqlite").is_file():
+        if not (app.data / f"{branch}.sqlite").is_file():
             branches[i] = None
 
     branches = [i for i in branches if i]
-    ok()
-    response = ENV.get_template("branches.tmpl").render(
-        conf=conf[apkvitrine.DEFAULT],
+    app.ok()
+    page = app.jinja.get_template("branches.tmpl").render(
+        conf=app.conf[apkvitrine.DEFAULT],
         branches=branches,
         show_builders=show_builders,
-    )
-    print(response)
-    save_cache(path, response)
+    ).encode("utf-8")
+    app.save_cache(page)
+    return [page]
 
-def page_branch(conf, path, query):
-    branch = path.parts[0]
-    db = init_db(branch)
-    if not db:
-        return
-    conf = conf[branch]
+def page_branch(app):
+    branch = app.path.parts[0]
+    db = init_db(app, branch)
+    if not db or branch not in app.conf:
+        return app.notfound()
+    conf = app.conf[branch]
 
-    pkgs = pkg_paginate(conf, query, db, """
+    pkgs = pkg_paginate(conf, app.query, db, """
         SELECT * FROM packages
         WHERE origin IS NULL
         ORDER BY updated DESC
     """)
-    ok()
+    app.ok()
     versions, repos, arches = pkg_versions(conf, db, pkgs)
 
-    response = ENV.get_template("branch.tmpl").render(
+    page = app.jinja.get_template("branch.tmpl").render(
         conf=conf,
         branch=branch,
-        query=query,
+        query=app.query,
         repos=repos,
         arches=arches,
         pkgs=pkgs,
         versions=versions,
-    )
-    print(response)
-    save_cache(path, response)
+    ).encode("utf-8")
+    app.save_cache(page)
+    return [page]
 
-def page_package(conf, path, _query):
-    branch, name = path.parts
-    db = init_db(branch)
-    if not db:
-        return
-    conf = conf[branch]
+def page_package(app):
+    branch, name = app.path.parts
+    db = init_db(app, branch)
+    if not db or branch not in app.conf:
+        return app.notfound()
+    conf = app.conf[branch]
 
     db.row_factory = apkvitrine.models.Pkg.factory
     pkg = db.execute("""
         SELECT * FROM packages WHERE name = ?;
     """, (name,)).fetchone()
     if not pkg:
-        notfound()
-        return
+        return app.notfound()
 
     pkg = pkg._replace(origin=pkg.get_origin(db))
     if pkg.maintainer:
@@ -264,8 +201,8 @@ def page_package(conf, path, _query):
     else:
         startdir = pkg.repo + "/" + pkg.name
 
-    ok()
-    response = ENV.get_template("package.tmpl").render(
+    app.ok()
+    page = app.jinja.get_template("package.tmpl").render(
         conf=conf,
         branch=branch,
         versions=pkg.get_versions(db),
@@ -277,9 +214,9 @@ def page_package(conf, path, _query):
         subpkgs=subpkgs,
         bugs=pkg.get_bugs(db),
         merges=pkg.get_merges(db),
-    )
-    print(response)
-    save_cache(path, response)
+    ).encode("utf-8")
+    app.save_cache(page)
+    return [page]
 
 # Don't consider it a complete search if only some combination of the
 # following are given in a query.
@@ -293,12 +230,12 @@ _BORING_TOGGLES = (
     "purge",
 )
 
-def page_search(conf, path, query):
-    branch = path.parts[0]
-    db = init_db(branch)
-    if not db:
-        return
-    conf = conf[branch]
+def page_search(app):
+    branch = app.path.parts[0]
+    db = init_db(app, branch)
+    if not db or branch not in app.conf:
+        return app.notfound()
+    conf = app.conf[branch]
 
     maints = set(db.execute("""
         SELECT DISTINCT(maintainer) FROM packages
@@ -312,92 +249,185 @@ def page_search(conf, path, query):
     if have_none:
         maints.insert(0, "None")
 
-    ok()
+    app.ok()
 
-    if any([j for i, j in query.items() if i not in _BORING_TOGGLES]):
+    if any([j for i, j in app.query.items() if i not in _BORING_TOGGLES]):
         searched = True
-        new_query = query.copy()
+        new_query = app.query.copy()
         sql = apkvitrine.models.build_search(new_query)
         pkgs = pkg_paginate(conf, new_query, db, sql)
-        query["limit"] = new_query["limit"]
-        query["offset"] = new_query["offset"]
-        query["total"] = new_query["total"]
-        query["page"] = new_query["page"]
+        app.query["limit"] = new_query["limit"]
+        app.query["offset"] = new_query["offset"]
+        app.query["total"] = new_query["total"]
+        app.query["page"] = new_query["page"]
     else:
         searched = False
         pkgs = []
 
-    if query.get("availability"):
+    if app.query.get("availability"):
         versions, repos, arches = pkg_versions(conf, db, pkgs)
     else:
         versions = {}
         repos = []
         arches = []
 
-    response = ENV.get_template("search.tmpl").render(
+    page = app.jinja.get_template("search.tmpl").render(
         conf=conf,
         branch=branch,
-        query=query,
+        query=app.query,
         maints=maints,
         searched=searched,
         repos=repos,
         arches=arches,
         pkgs=pkgs,
         versions=versions,
-    )
-    print(response)
+    ).encode("utf-8")
     if not searched:
-        save_cache(path, response)
+        app.save_cache(page)
+    return [page]
 
-def page_home(conf, _path, _query):
-    redirect(conf[apkvitrine.DEFAULT]["default_version"])
+def page_home(app):
+    app.redirect(app.conf[apkvitrine.DEFAULT]["default_version"])
+    return []
 
-ROUTES = {
-    "-/versions": page_branches,
-    "-/builders": page_builders,
-    "*/-/search": page_search,
-    "*/*/*": lambda _conf, _path, _query: notfound(),
-    "*/*": page_package,
-    "*": page_branch,
-    ".": page_home,
-}
+class APKVitrineApp:
+    routes = {
+        "-/versions": page_branches,
+        "-/builders": page_builders,
+        "*/-/search": page_search,
+        "*/*/*": lambda app: notfound(app),
+        "*/*": page_package,
+        "*": page_branch,
+        ".": page_home,
+    }
+
+    __slots__ = (
+        "_response",
+        "base",
+        "cache",
+        "conf",
+        "data",
+        "env",
+        "jinja",
+        "path",
+        "query",
+        "request",
+    )
+
+    def __init__(self, cache=None):
+        self.jinja = jinja2.Environment(
+            loader=jinja2.PackageLoader("apkvitrine", "templates"),
+            autoescape=True,
+            trim_blocks=True,
+            bytecode_cache=jinja2.FileSystemBytecodeCache(),
+            extensions=["jinja2.ext.loopcontrols"],
+            line_statement_prefix="#",
+            line_comment_prefix="##",
+        )
+        self.jinja.filters["datetime"] = datetime_filter
+
+        self.conf = apkvitrine.config()
+
+        if "cache_dir" in self.conf[apkvitrine.DEFAULT]:
+            self.cache = Path(self.conf[apkvitrine.DEFAULT]["cache_dir"])
+        else:
+            self.cache = None
+        self.jinja.globals["cache"] = bool(self.cache)
+
+        self.data = Path(self.conf[apkvitrine.DEFAULT]["data_dir"])
+
+    def handle(self, env, response):
+        self.env = env
+        self._response = response
+
+        self.base = Path(env.get("SCRIPT_NAME", ""))
+        self.path = Path(env.get("PATH_INFO", "").lstrip("/"))
+        self.query = urllib.parse.parse_qs(env.get("QUERY_STRING", ""))
+        self.query = {i: j[-1] for i, j in self.query.items()}
+
+        # Used for pagination on search pages so that "page=x" isn't repeated
+        self.request = str(self.base / self.path) + "?"
+        self.request += urllib.parse.urlencode(
+            {i: j for i, j in self.query.items() if i != "page"}
+        )
+
+        self.jinja.globals["base"]  = self.base
+        self.jinja.globals["request"] = self.request
+
+        page = self.cached_page()
+        if page is not None:
+            return page
+
+        return self.generate_page()
+
+    def cache_name(self, path):
+        return self.cache / path.parent / (path.name + ".html")
+
+    def save_cache(self, page, path=None):
+        if not self.cache:
+            return
+        if not path:
+            path = app.path
+
+        cache = self.cache_name(path)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_bytes(page)
+
+    def cached_page(self):
+        if not self.cache:
+            return None
+
+        cache = self.cache_name(self.path)
+        if cache.exists():
+            if not self.query:
+                self.ok()
+                return [cache.read_bytes()]
+            elif self.query.get("purge") == "1":
+                if (time.time() - cache.stat().st_mtime) > 600:
+                    cache.unlink()
+                self.redirect(self.base / self.path)
+                return []
+
+        return None
+
+    def generate_page(self):
+        if ".." in self.path.parts:
+            return self.badreq()
+
+        for route, handler in self.routes.items():
+            if route == ".":
+                if route == str(self.path):
+                    return handler(self)
+            elif self.path.match(route):
+                return handler(self)
+        return self.notfound()
+
+    def response(self, status, *, ctype=None, headers=None):
+        if not headers:
+            headers = []
+        if ctype or "content-type" not in [i[0].lower() for i in headers]:
+            headers.append(("Content-Type", ctype or "text/html; charset=utf-8"))
+        self._response(f"{status.value} {status.phrase}", headers)
+
+    def error(self, status, **kwargs):
+        self.response(status, ctype="text/plain", **kwargs)
+        return [f"Error {status.value} - {status.phrase}"]
+
+    def notfound(self, **kwargs):
+        return self.error(http.HTTPStatus.NOT_FOUND, **kwargs)
+
+    def ok(self, **kwargs):
+        self.response(http.HTTPStatus.OK, **kwargs)
+
+    def badreq(**kwargs):
+        return self.error(http.HTTPStatus.BAD_REQUEST, **kwargs)
+
+    def redirect(self, location):
+        self.response(
+            http.HTTPStatus.TEMPORARY_REDIRECT,
+            headers=[("Location", str(self.base / location))],
+        )
 
 if __name__ == "__main__":
-    path = Path(os.environ.get("PATH_INFO", "").lstrip("/"))
-    query = urllib.parse.parse_qs(os.environ.get("QUERY_STRING", ""))
-    query = {i: j[-1] for i, j in query.items()}
-    ENV.globals["base"] = os.environ.get("SCRIPT_NAME") or ""
-
-    # Used for pagination on search pages so that "page=x" isn't repeated
-    ENV.globals["request"] = ENV.globals["base"] + "/" + str(path) + "?"
-    ENV.globals["request"] += urllib.parse.urlencode(
-        {i: j for i, j in query.items() if i != "page"}
-    )
-
-    if ".." in path.parts:
-        badreq()
-        sys.exit(0)
-
-    cache = cache_name(path)
-    if cache.exists():
-        if not query:
-            ok()
-            with cache.open() as cached:
-                shutil.copyfileobj(cached, sys.stdout)
-            sys.exit(0)
-        elif query.get("purge") == "1":
-            cache.unlink()
-            redirect(path)
-            sys.exit(0)
-
-    conf = apkvitrine.config()
-    for route, handler in ROUTES.items():
-        if route == ".":
-            if route == str(path):
-                handler(conf, path, query)
-                break
-        elif path.match(route):
-            handler(conf, path, query)
-            break
-    else:
-        notfound()
+    app = APKVitrineApp()
+    flup.WSGIServer(app.handle).run()

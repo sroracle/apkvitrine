@@ -15,6 +15,25 @@ repos = system aarch64 ppc ppc64 pmmx x86_64
 ; Substitutions: {revision}
 gl_rev_url = https://code.foxkit.us/adelie/packages/-/commit/{revision}
 
+; Required: data directory
+; This is the directory in which the web application looks for the SQL
+; database files.
+;
+; This option should only be specified in the @default section.
+data_dir = /var/db/apkvitrine
+
+; Optional: enable static HTML caching
+; Each page that the web application believes to be static (for the
+; lifetime of the SQL database) will be cached underneath this
+; directory. Combined with FastCGI, this makes loading latencies very
+; low. It should be manually emptied after the SQL database is updated.
+;
+; This directory should already exist, or be creatable by the user under
+; which the web application runs.
+;
+; This option should only be specified in the @default section.
+;cache_dir = /var/tmp/apkvitrine
+
 ; *********************
 ; * Bugzilla settings *
 ; *********************
