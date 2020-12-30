@@ -22,10 +22,10 @@
 
 # block content
 <h3 class="title is-3">Latest version availability by architecture</h3>
-# if "repology_link" in conf and "repology_badge" in conf
+# if conf.get("web.repology.link") and conf.get("web.repology.badge")
 <p>
- <a href="{{ conf["repology_link"] ~ repology_name }}">
-  <img src="{{ conf["repology_badge"] ~ repology_name }}" onerror="this.style.display='none'" alt="Repology version information">
+ <a href="{{ conf["web.repology.link"] ~ repology_name }}">
+  <img src="{{ conf["web.repology.badge"] ~ repology_name }}" onerror="this.style.display='none'" alt="Repology version information">
  </a>
 </p>
 # endif
@@ -82,11 +82,15 @@
   # set revision = revision.replace("-dirty", "", 1)
   # set tag = " <span class='tag is-danger'>dirty</span>"
   # endif
-  # set url = conf["gl_rev_url"].format(revision=revision)
+  # if conf.get("web.url.rev")
+  # set url = conf["web.url.rev"].format(revision=revision)
   <tr><th>Revision</th>    <td><a href="{{ url }}">{{ revision ~ (tag|safe) }}</a></td></tr>
   # endif
-  # set url = conf["gl_url"].format(startdir=pkg.startdir)
+  # endif
+  # if conf.get("web.url.tree")
+  # set url = conf["web.url.tree"].format(startdir=pkg.startdir)
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
+  # endif
 </table>
 </div>
 
@@ -161,7 +165,7 @@
   # endif
 </div>
 
-# if bugs
+# if bugs and conf.get("web.url.bug")
 <h3 class="title is-3">Open issues</h3>
 <table class="table" id="bugs">
   <tr>
@@ -170,7 +174,7 @@
     <th>Tags</th>
   </tr>
   # for bug in bugs|sort(attribute="id")
-  #   set url = conf["bz_url"].format(id=bug.id)
+  #   set url = conf["web.url.bug"].format(id=bug.id)
   <tr>
     <td><a href="{{ url }}">{{ bug.id }}</a></td>
     <td><a href="{{ url }}">{{ bug.summary }}</a></td>
@@ -180,7 +184,7 @@
 </table>
 # endif
 
-# if merges
+# if merges and conf.get("web.url.mr")
 <h3 class="title is-3">Open merge requests</h3>
 <table class="table" id="merges">
   <tr>
@@ -189,7 +193,7 @@
     <th>Tags</th>
   </tr>
   # for merge in merges|sort(attribute="id")
-  #   set url = conf["gl_mr_url"].format(id=merge.id)
+  #   set url = conf["web.url.mr"].format(id=merge.id)
   <tr>
     <td><a href="{{ url }}">{{ merge.id }}</a></td>
     <td><a href="{{ url }}">{{ merge.summary }}</a></td>

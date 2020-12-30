@@ -44,10 +44,47 @@ def _ConfigParser(**kwargs):
     parser.BOOLEAN_STATES = {"true": True, "false": False}
     return parser
 
+_DEFAULT_CONFIG = {
+    "@default": {
+        # distro (str)
+        # repos (maplist)
+        # index (str)
+        "ignore": "", # list
+        "startdirs": "", # map
+
+        "bz.api": "", # str
+        # bz.product (str)
+        # bz.component (str)
+        # bz.field (str)
+        "bz.status": "", # list
+
+        "gl.api": "", # str
+        # gl.branch (str)
+
+        # cgi.default_version (str)
+        # cgi.data (str)
+        "cgi.cache": "", # str
+
+        "web.pagination": "25", # int
+        "web.url.rev": "", # str
+        "web.url.tree": "", # str
+        "web.url.bug": "", # str
+        "web.url.mr": "", # str
+        "web.repology.link": "", # str
+        "web.repology.badge": "", # str
+    },
+    # [@builders] gl.token (str)
+    # [@builders] gl.api (str - override)
+}
+
 def config(version=None):
-    config = _ConfigParser()
     files = sorted(SYSCONFDIR.glob("*.ini"))
+
+    config = _ConfigParser()
+    config.read_dict(_DEFAULT_CONFIG)
     config.read(files)
+
     if version:
         return config[version]
+
     return config

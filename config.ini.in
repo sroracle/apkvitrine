@@ -1,32 +1,94 @@
+; The settings in the @default section serve as global settings or
+; fallback settings for every OS version.
 [@default]
-; =========================================================
-; *****************
-; * Main settings *
-; *****************
+;;;;;;;;;;;;;;;;;;;
+;; Main settings ;;
+;;;;;;;;;;;;;;;;;;;
+
 ; Required: OS distribution name
+;
 distro = Adélie
-; Required: APKINDEX locations
-; Substitutions: {version}, {repo}, {arch}
-url = https://mirrormaster.adelielinux.org/adelie/{version}/{repo}/{arch}/APKINDEX.tar.gz
+
 ; Required: list of repositories and the architectures they support
+;
 repos = system aarch64 ppc ppc64 pmmx x86_64
         user aarch64 ppc ppc64 pmmx x86_64
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Database builder settings ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Required: APKINDEX locations
+; Substitutions: {version}, {repo}, {arch}
+;
+index = https://mirrormaster.adelielinux.org/adelie/{version}/{repo}/{arch}/APKINDEX.tar.gz
+
+; Optional: packages to exclude when building a database
+;
+;ignore = console-fonts
+;         console-keymaps
+
 ; Optional: override the STARTDIR for each package name (one package
 ; name / STARTDIR pair per line)
+;
 ;startdirs = easy-kernel-5.4.66-mc1 system/easy-kernel
 ;            easy-kernel-5.4.5-mc0 system/easy-kernel
 
-; Required: URL for revision links
-; Substitutions: {revision}
-gl_rev_url = https://code.foxkit.us/adelie/packages/-/commit/{revision}
+
+
+; Optional: enables bug tracking - API endpoint for Bugzilla
+;
+;bz.api = https://bts.adelielinux.org/rest.cgi
+
+; Required for bug tracking: Bugzilla product
+;
+;bz.product = Adélie Linux
+
+; Required for bug tracking: Bugzilla component
+;
+;bz.component = Packaging
+
+; Required for bug tracking: custom bug field for STARTDIR on which to
+; match
+;
+;bz.field = cf_package
+
+; Optional: filter by bug status
+;
+;bz.status = UNCONFIRMED
+;            CONFIRMED
+;            IN_PROGRESS
+
+
+
+; Optional: enables merge request tracking - Gitlab API endpoint for the
+; project
+;gl.api = https://code.foxkit.us/api/v4/projects/45
+; Required for merge request tracking: branch for this OS version on
+; Gitlab
+;gl.branch = master
+
+
+
+;;;;;;;;;;;;;;;;;;
+;; CGI settings ;;
+;;;;;;;;;;;;;;;;;;
+
+; Required: default OS version
+; This is the OS version that the main page of the application (e.g.
+; /pkg/) will redirect to (e.g. /pkg/current).
+;
+cgi.default_version = current
 
 ; Required: data directory
 ; This is the directory in which the web application looks for the SQL
 ; database files.
 ;
 ; This option should only be specified in the @default section.
-data_dir = /var/db/apkvitrine
+;
+cgi.data = /var/db/apkvitrine
 
 ; Optional: enable static HTML caching
 ; Each page that the web application believes to be static (for the
@@ -38,81 +100,72 @@ data_dir = /var/db/apkvitrine
 ; which the web application runs.
 ;
 ; This option should only be specified in the @default section.
-;cache_dir = /var/tmp/apkvitrine
+;
+;cgi.cache = /var/tmp/apkvitrine
 
-; *********************
-; * Bugzilla settings *
-; *********************
-; Optional: enables bug tracking - API endpoint for Bugzilla
-bz_api_url = https://bts.adelielinux.org/rest.cgi
-; Required for bug tracking: Bugzilla bug URL
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Web application settings ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Optional: number of packages per page (default: 25)
+;
+;web.pagination = 25
+
+; Optional: URL for revision links (default: not shown)
+; Substitutions: {revision}
+;
+;web.url.rev = https://code.foxkit.us/adelie/packages/-/commit/{revision}
+
+; Optional: URL for source directory for this OS version (default: not shown)
+; Substitutions: {startdir}
+;
+;web.url.tree = https://code.foxkit.us/adelie/packages/-/tree/master/{startdir}
+
+; Optional: URL for bug (default: not shown)
 ; Substitutions: {id}
-bz_url = https://bts.adelielinux.org/show_bug.cgi?id={id}
-; Required for bug tracking: Bugzilla product
-bz_product = Adélie Linux
-; Required for bug tracking: Bugzilla component
-bz_component = Packaging
-; Optional: filter by bug status
-bz_status = UNCONFIRMED
-            CONFIRMED
-            IN_PROGRESS
-; Required for bug tracking: custom bug field for startdir on which to
-; match
-bz_field = cf_package
+;
+;web.url.bug = https://bts.adelielinux.org/show_bug.cgi?id={id}
 
-; *******************
-; * Gitlab settings *
-; *******************
-; Optional: enables merge request tracking - Gitlab API endpoint for the
-; project
-gl_api_url = https://code.foxkit.us/api/v4/projects/45
-; Required for merge request tracking: URL for merge request
+; Optional: URL for merge request (default: not shown)
 ; Substitutions: {id}
-gl_mr_url = https://code.foxkit.us/adelie/packages/-/merge_requests/{id}
+;
+;web.url.mr = https://code.foxkit.us/adelie/packages/-/merge_requests/{id}
 
-; ****************
-; * Web settings *
-; ****************
-; Required: number of packages per page
-pagination = 25
-; Required: default OS version
-default_version = current
+; Optional: add a Repology badge with a link (specify both; default: not
+; shown)
+;
+;web.repology.link = https://repology.org/tools/project-by?repo=adelie_current&name_type=binname&target_page=project_history&name=
+;web.repology.badge = https://repology.org/tools/project-by?repo=adelie_current&name_type=binname&target_page=badge_version_for_repo&name=
 
 ; Optional: enable builders page
+; Include the following section name to enable the web application's
+; builder monitoring page. This requires the specification of a Gitlab
+; API token below.
+;
 ;[@builders]
-; Optional: override Gitlab API endpoint to query builder status
-; ("runners" API endpoint)
-;gl_api_url = https://code.foxkit.us/api/v4/projects/76
 ; Required for builders page: Gitlab API token (PRIVATE-TOKEN) that can
 ; view the above project's runners list
-;gl_api_token = YOUR-TOKEN-HERE
+;
+;gl.token = YOUR-TOKEN-HERE
 
+; Required for the builders page: Gitlab API endpoint for the project
+; with which the runners are associated
+;
+;gl.api = https://code.foxkit.us/api/v4/projects/76
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OS version overrides ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Add a section for each OS version. Any options can be overridden
+; within, or only specified for a particular version, and so on.
 [current]
-; =========================================================
-; *******************
-; * Gitlab settings *
-; *******************
-; Required for merge request tracking: branch for this OS version on
-; Gitlab
-gl_branch = master
-; Required: URL for APKBUILD startdirs for this OS version
-; Substitutions: {startdir}
-gl_url = https://code.foxkit.us/adelie/packages/-/tree/master/{startdir}
 
-; Optional: packages to exclude when building a database
-ignore = console-fonts
-         console-keymaps
 
-; Optional: add a Repology badge with a link (specify both)
-repology_link = https://repology.org/tools/project-by?repo=adelie_current&name_type=binname&target_page=project_history&name=
-repology_badge = https://repology.org/tools/project-by?repo=adelie_current&name_type=binname&target_page=badge_version_for_repo&name=
 
 [1.0-beta4]
-gl_branch = 1.0-BETA4
-gl_url = https://code.foxkit.us/adelie/packages/-/tree/1.0-BETA4/{startdir}
-
-; FIXME this should not be needed
-ignore =
-
-bz_api_url =
-gl_api_url =
+;web.tree_url = https://code.foxkit.us/adelie/packages/-/tree/1.0-BETA4/{startdir}

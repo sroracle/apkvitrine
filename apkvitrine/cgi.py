@@ -46,7 +46,7 @@ def init_db(app, branch):
         return None
 
 def pkg_paginate(conf, query, db, sql):
-    query["limit"] = conf.getint("pagination")
+    query["limit"] = conf.getint("web.pagination")
     try:
         query["page"] = int(query.get("page", "1"))
     except ValueError:
@@ -85,40 +85,35 @@ def page_builders(app):
     if apkvitrine.BUILDERS not in app.conf:
         return app.notfound()
     bconf = app.conf[apkvitrine.BUILDERS]
+    if not bconf.get("gl.token") or not bconf.get("gl.api"):
+        return app.notfound()
 
-    builders = gl_runner_info(
-        bconf["gl_api_token"],
-        bconf["gl_api_url"],
-        "runners",
-    )
+    token = bconf["gl.token"]
+    api = bconf["gl.api"]
+    builders = gl_runner_info(token, api, "runners")
     builders = [i["id"] for i in builders]
 
     for i, builder in enumerate(builders):
         builders[i] = apkvitrine.models.Builder(gl_runner_info(
-            bconf["gl_api_token"],
-            bconf["gl_api_url"],
-            f"../../runners/{builder}",
+            token, api, f"../../runners/{builder}",
         ))
 
         jobs = gl_runner_info(
-            bconf["gl_api_token"],
-            bconf["gl_api_url"],
+            token, api,
             f"../../runners/{builder}/jobs?status=running&order_by=id&per_page=1",
         )
         if jobs:
             builders[i].running_job = apkvitrine.models.Job(jobs[0])
 
         jobs = gl_runner_info(
-            bconf["gl_api_token"],
-            bconf["gl_api_url"],
+            token, api,
             f"../../runners/{builder}/jobs?status=success&order_by=id&per_page=1",
         )
         if jobs:
             builders[i].success_job = apkvitrine.models.Job(jobs[0])
 
         jobs = gl_runner_info(
-            bconf["gl_api_token"],
-            bconf["gl_api_url"],
+            token, api,
             f"../../runners/{builder}/jobs?status=failed&order_by=id&per_page=1",
         )
         if jobs:
@@ -282,7 +277,7 @@ def page_search(app):
     return [page]
 
 def page_home(app):
-    return app.redirect(app.conf[apkvitrine.DEFAULT]["default_version"])
+    return app.redirect(app.conf[apkvitrine.DEFAULT]["cgi.default_version"])
 
 def page_notfound(app):
     return app.notfound()
@@ -324,13 +319,13 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
 
         self.conf = apkvitrine.config()
 
-        if "cache_dir" in self.conf[apkvitrine.DEFAULT]:
-            self.cache = Path(self.conf[apkvitrine.DEFAULT]["cache_dir"])
+        if self.conf[apkvitrine.DEFAULT].get("cgi.cache"):
+            self.cache = Path(self.conf[apkvitrine.DEFAULT]["cgi.cache"])
         else:
             self.cache = None
         self.jinja.globals["cache"] = bool(self.cache)
 
-        self.data = Path(self.conf[apkvitrine.DEFAULT]["data_dir"])
+        self.data = Path(self.conf[apkvitrine.DEFAULT]["cgi.data"])
 
         self._response = self.env = None
         self.base = self.path = self.query = None

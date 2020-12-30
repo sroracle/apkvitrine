@@ -82,7 +82,7 @@ def pull_indices(conf, version):
             # Noisy
             logging.disable(logging.INFO)
             index = Index(
-                url=conf["url"].format(version=version, repo=repo, arch=arch),
+                url=conf["index"].format(version=version, repo=repo, arch=arch),
             )
             logging.disable(logging.NOTSET)
 
@@ -235,24 +235,24 @@ def populate_deps(db, pkgs, pkgids, provs):
 
 def populate_bugs(conf, db, pkgids, main_startdirs):
     # TODO: match on version
-    if not conf.get("bz_api_url"):
+    if not conf.get("bz.api"):
         return
 
     logging.info("Building bug tables...")
-    field = conf["bz_field"]
+    field = conf["bz.field"]
     query = urllib.parse.urlencode([
-        ("product", conf["bz_product"]),
-        ("component", conf["bz_component"]),
+        ("product", conf["bz.product"]),
+        ("component", conf["bz.component"]),
         ("include_fields", ",".join((
             "id", "status", "summary", "keywords",
             field, "last_change_time",
         ))),
         ("status", conf.getlist(
-            "bz_status", ["UNCONFIRMED", "CONFIRMED", "IN_PROGRESS"]
+            "bz.status", ["UNCONFIRMED", "CONFIRMED", "IN_PROGRESS"]
         )),
     ], doseq=True)
     request = urllib.request.Request(
-        url=f"{conf['bz_api_url']}/bug?{query}",
+        url=f"{conf['bz.api']}/bug?{query}",
         method="GET",
         headers={
             "Accept": "application/json",
@@ -309,22 +309,22 @@ def populate_bugs(conf, db, pkgids, main_startdirs):
     db.commit()
 
 def populate_merges(conf, db, pkgids, main_startdirs):
-    if not conf.get("gl_api_url"):
+    if not conf.get("gl.api"):
         return
 
     logging.info("Building merge request tables...")
     query = urllib.parse.urlencode({
         "state": "opened",
-        "target_branch": conf["gl_branch"],
+        "target_branch": conf["gl.branch"],
     }, doseq=True)
-    url = f"{conf['gl_api_url']}/merge_requests?{query}"
+    url = f"{conf['gl.api']}/merge_requests?{query}"
     with urllib.request.urlopen(url) as response:
         gl_merges = json.load(response)
 
     merges = []
     mergelinks = []
     for merge in gl_merges:
-        url = f"{conf['gl_api_url']}/merge_requests/{merge['iid']}/changes"
+        url = f"{conf['gl.api']}/merge_requests/{merge['iid']}/changes"
         with urllib.request.urlopen(url) as response:
             gl_changes = json.load(response)["changes"]
 
