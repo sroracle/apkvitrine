@@ -279,7 +279,7 @@ def populate_bugs(conf, db, pkgids):
             bug["id"], bug["summary"], ",".join(bug["keywords"]),
             datetime.datetime.strptime(
                 bug["last_change_time"], BZ_DATE_FORMAT,
-            ).strftime("%s"),
+            ).timestamp(),
         ))
 
     apkvitrine.models.Bug.insertmany(db, bugs)
@@ -330,7 +330,7 @@ def populate_merges(conf, db, pkgids):
                     merge["iid"], merge["title"], ",".join(merge["labels"]),
                     datetime.datetime.strptime(
                         merge["updated_at"], GL_DATE_FORMAT,
-                    ).strftime("%s"),
+                    ).timestamp(),
                 ))
                 matches = True
             mergelinks.append(apkvitrine.models.Mergelink(merge["iid"], pkgid))
