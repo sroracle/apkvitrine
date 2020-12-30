@@ -6,7 +6,7 @@ import configparser # ConfigParser
 import os           # environ
 from pathlib import Path
 
-VERSION = "0.1"
+VERSION = "0.2"
 BUILDERS = "@builders"
 DEFAULT = "@default"
 
