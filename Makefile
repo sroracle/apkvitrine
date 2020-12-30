@@ -31,7 +31,7 @@ all:
 paths:
 	@printf 'CONF: SYSCONFDIR = "%s"\n' '$(SYSCONFDIR)'
 	@sed -i \
-		-e '/^SYSCONFDIR = /s@= .*@= Path("/$(SYSCONFDIR)")@' \
+		-e '/^_SYSCONFDIR = /s@= .*@= Path("/$(SYSCONFDIR)")@' \
 		apkvitrine/__init__.py
 
 .PHONY: install

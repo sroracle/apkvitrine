@@ -3,13 +3,18 @@
 # See LICENSE for more information.
 import collections  # defaultdict
 import configparser # ConfigParser
+import os           # environ
 from pathlib import Path
 
 VERSION = "0.1"
 BUILDERS = "@builders"
 DEFAULT = "@default"
 
-SYSCONFDIR = Path(__file__).parent.parent
+_SYSCONFDIR = Path(__file__).parent.parent
+SYSCONFDIR = Path(os.environ.get(
+    "AV_CONFIG",
+    _SYSCONFDIR,
+)).resolve(strict=False)
 
 def _config_map(s):
     d = {}
