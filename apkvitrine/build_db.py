@@ -103,14 +103,18 @@ def pull_indices(conf, version):
 
     return all_pkgs, pkgs, provs
 
-def populate_packages(db, all_pkgs):
+def populate_packages(conf, db, all_pkgs):
     logging.info("Building main package entries...")
+    sdir_custom = conf.getmap("startdirs")
+
     # Populate main packages first so we can reference them as origins to
     # subpackages
     mainpkgs = [
-        apkvitrine.models.Pkg.from_index(i, None)
-        for i in all_pkgs.values() if i.origin == i.name
+        apkvitrine.models.Pkg.from_index(
+            i, sdir_custom.get(i.name, f"{i.repo}/{i.name}"), None,
+        ) for i in all_pkgs.values() if i.origin == i.name
     ]
+    main_startdirs = {i.startdir: i.name for i in mainpkgs}
     apkvitrine.models.Pkg.insertmany(db, mainpkgs)
     db.commit()
     del mainpkgs
@@ -125,7 +129,9 @@ def populate_packages(db, all_pkgs):
         if pkg.origin == pkg.name:
             continue
         origin = mainpkgs[pkg.origin]
-        subpkgs.append(apkvitrine.models.Pkg.from_index(pkg, origin.id))
+        subpkgs.append(apkvitrine.models.Pkg.from_index(
+            pkg, origin.startdir, origin.id,
+        ))
     apkvitrine.models.Pkg.insertmany(db, subpkgs)
     db.commit()
     del mainpkgs
@@ -133,7 +139,7 @@ def populate_packages(db, all_pkgs):
 
     rows = db.execute("SELECT * FROM packages;").fetchall()
     pkgids = {i.name: i.id for i in rows}
-    return pkgids
+    return pkgids, main_startdirs
 
 def populate_versions(db, all_pkgs, pkgs, pkgids):
     logging.info("Building version table...")
@@ -227,7 +233,7 @@ def populate_deps(db, pkgs, pkgids, provs):
     apkvitrine.models.Missingdep.insertmany(db, mdeps)
     db.commit()
 
-def populate_bugs(conf, db, pkgids):
+def populate_bugs(conf, db, pkgids, main_startdirs):
     # TODO: match on version
     if not conf.get("bz_api_url"):
         return
@@ -265,18 +271,28 @@ def populate_bugs(conf, db, pkgids):
             continue
 
         for sdir in sdirs:
-            sdir = sdir.split("/", maxsplit=1)
-            if len(sdir) < 2:
+            if sdir.count("/") == 0:
+                pkg = sdir
+            elif sdir.count("/") == 1:
+                _, pkg = sdir.split("/", maxsplit=1)
+            else:
                 logging.error(
-                    "Bug %d: invalid %r: %s", bug["id"], field, bug[field],
+                    "Bug #%d: invalid %r: %r", bug["id"], field, sdir,
                 )
                 continue
-            _repo, pkg = sdir
+
             pkgid = pkgids.get(pkg)
+            if not pkgid and main_startdirs.get(sdir):
+                pkg_new = main_startdirs[sdir]
+                logging.info(
+                    "Bug #%d: %r -> %r",
+                    bug["id"], sdir, pkg_new,
+                )
+                pkgid = pkgids.get(pkg_new)
             if not pkgid:
                 logging.warning(
                     "Bug #%d: unknown package %r",
-                    bug["id"], bug[field],
+                    bug["id"], sdir,
                 )
                 continue
             buglinks.append(apkvitrine.models.Buglink(bug["id"], pkgid))
@@ -292,7 +308,7 @@ def populate_bugs(conf, db, pkgids):
     apkvitrine.models.Buglink.insertmany(db, buglinks)
     db.commit()
 
-def populate_merges(conf, db, pkgids):
+def populate_merges(conf, db, pkgids, main_startdirs):
     if not conf.get("gl_api_url"):
         return
 
@@ -323,11 +339,19 @@ def populate_merges(conf, db, pkgids):
 
         matches = False
         for repo, pkg in sdirs:
+            sdir = f"{repo}/{pkg}"
             pkgid = pkgids.get(pkg)
+            if not pkgid and main_startdirs.get(sdir):
+                pkg_new = main_startdirs[sdir]
+                logging.info(
+                    "MR #%d: %r -> %r",
+                    merge["iid"], sdir, pkg_new,
+                )
+                pkgid = pkgids.get(pkg_new)
             if not pkgid:
                 logging.warning(
-                    "MR #%d: new or unknown package '%s/%s'",
-                    merge["iid"], repo, pkg,
+                    "MR #%d: new or unknown package %r",
+                    merge["iid"], sdir,
                 )
                 continue
 
@@ -374,9 +398,11 @@ if __name__ == "__main__":
 
         all_pkgs, pkgs, provs = pull_indices(conf, version)
 
-        pkgids = populate_packages(db, all_pkgs)
+        pkgids, main_startdirs = populate_packages(conf, db, all_pkgs)
         populate_versions(db, all_pkgs, pkgs, pkgids)
+        del all_pkgs
         populate_deps(db, pkgs, pkgids, provs)
+        del provs
 
-        populate_bugs(conf, db, pkgids)
-        populate_merges(conf, db, pkgids)
+        populate_bugs(conf, db, pkgids, main_startdirs)
+        populate_merges(conf, db, pkgids, main_startdirs)

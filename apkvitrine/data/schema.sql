@@ -2,6 +2,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE packages (
   id INTEGER PRIMARY KEY,
+  startdir TEXT NOT NULL,
   repo TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,

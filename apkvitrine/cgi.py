@@ -196,10 +196,6 @@ def page_package(app):
     if pkg.maintainer:
         pkg = pkg._replace(maintainer=pkg.maintainer.split(" <")[0])
     subpkgs = pkg.get_subpkgs(db)
-    if pkg.origin:
-        startdir = pkg.repo + "/" + pkg.origin.name
-    else:
-        startdir = pkg.repo + "/" + pkg.name
 
     app.ok()
     page = app.jinja.get_template("package.tmpl").render(
@@ -208,7 +204,6 @@ def page_package(app):
         versions=pkg.get_versions(db),
         arches=sorted(conf.getmaplist("repos")[pkg.repo]),
         pkg=pkg,
-        startdir=startdir,
         deps=pkg.get_deps(db),
         rdeps=pkg.get_deps(db, reverse=True),
         subpkgs=subpkgs,

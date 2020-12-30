@@ -26,6 +26,7 @@ class DbModel:
 _Pkg = collections.namedtuple(
     "Pkg", (
         "id",
+        "startdir",
         "repo",
         "name",
         "description",
@@ -44,9 +45,9 @@ class Pkg(_Pkg, DbModel):
     _insert_sql = _insert(_table, _Pkg._fields)
 
     @classmethod
-    def from_index(cls, pkg, origin):
+    def from_index(cls, pkg, startdir, origin):
         return cls(
-            None, pkg.repo, pkg.name,
+            None, startdir, pkg.repo, pkg.name,
             pkg.description, pkg.url, pkg.license,
             origin, pkg.maintainer, pkg.commit, None, None,
         )

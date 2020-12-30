@@ -11,6 +11,12 @@ url = https://mirrormaster.adelielinux.org/adelie/{version}/{repo}/{arch}/APKIND
 ; Required: list of repositories and the architectures they support
 repos = system aarch64 ppc ppc64 pmmx x86_64
         user aarch64 ppc ppc64 pmmx x86_64
+
+; Optional: override the STARTDIR for each package name (one package
+; name / STARTDIR pair per line)
+;startdirs = easy-kernel-5.4.66-mc1 system/easy-kernel
+;            easy-kernel-5.4.5-mc0 system/easy-kernel
+
 ; Required: URL for revision links
 ; Substitutions: {revision}
 gl_rev_url = https://code.foxkit.us/adelie/packages/-/commit/{revision}

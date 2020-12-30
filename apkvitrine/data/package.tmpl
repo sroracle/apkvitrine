@@ -85,7 +85,7 @@
   # set url = conf["gl_rev_url"].format(revision=revision)
   <tr><th>Revision</th>    <td><a href="{{ url }}">{{ revision ~ (tag|safe) }}</a></td></tr>
   # endif
-  # set url = conf["gl_url"].format(startdir=startdir)
+  # set url = conf["gl_url"].format(startdir=pkg.startdir)
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
 </table>
 </div>
