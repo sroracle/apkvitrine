@@ -67,7 +67,7 @@ def is_older(old, new):
 def is_same(old, new):
     return vercmp(old, new) == APK_VER.EQUAL
 
-_LIBAPK = ctypes.CDLL("libapk.so")
+_LIBAPK = ctypes.CDLL("libapk.so.3.12.0")
 _LIBAPK.apk_version_compare_blob_fuzzy.argtypes = [
     _apk_blob_t, _apk_blob_t, ctypes.c_int,
 ]
