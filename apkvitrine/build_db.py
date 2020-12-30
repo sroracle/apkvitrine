@@ -90,6 +90,12 @@ def pull_indices(conf, version):
                 if new.name in ignore:
                     logging.info("Ignoring %r", new.name)
                     continue
+                if new.origin in ignore:
+                    logging.info(
+                        "Pruning %r from ignored origin %r",
+                        new.name, new.origin,
+                    )
+                    continue
                 new.repo = repo
                 pkg_newest(all_pkgs, new)
                 pkg_newest(pkgs[arch], new)
