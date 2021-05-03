@@ -297,6 +297,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
         "_response",
         "base",
         "cache",
+        "cacheable",
         "conf",
         "data",
         "env",
@@ -343,6 +344,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
         self.path = Path(env.get("PATH_INFO", "").lstrip("/"))
         self.query = urllib.parse.parse_qs(env.get("QUERY_STRING", ""))
         self.query = {i: j[-1] for i, j in self.query.items()}
+        self.cacheable = False if self.query else True
 
         self.jinja.globals["base"] = self.base
         # Used for pagination on search pages so that "page=x" isn't repeated
@@ -361,7 +363,7 @@ class APKVitrineApp: # pylint: disable=too-many-instance-attributes
         return self.cache / path.parent / (path.name + ".html")
 
     def save_cache(self, page, path=None):
-        if not self.cache:
+        if not self.cache or not self.cacheable:
             return
         if not path:
             path = self.path
