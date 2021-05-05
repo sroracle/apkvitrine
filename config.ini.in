@@ -65,7 +65,7 @@ index = https://mirrormaster.adelielinux.org/adelie/{version}/{repo}/{arch}/APKI
 
 ; Optional: enables merge request tracking - Gitlab API endpoint for the
 ; project
-;gl.api = https://code.foxkit.us/api/v4/projects/45
+;gl.api = https://git.adelielinux.org/api/v4/projects/45
 ; Required for merge request tracking: branch for this OS version on
 ; Gitlab
 ;gl.branch = master
@@ -116,12 +116,12 @@ cgi.data = /var/db/apkvitrine
 ; Optional: URL for revision links (default: not shown)
 ; Substitutions: {revision}
 ;
-;web.url.rev = https://code.foxkit.us/adelie/packages/-/commit/{revision}
+;web.url.rev = https://git.adelielinux.org/adelie/packages/-/commit/{revision}
 
 ; Optional: URL for source directory for this OS version (default: not shown)
 ; Substitutions: {startdir}
 ;
-;web.url.tree = https://code.foxkit.us/adelie/packages/-/tree/master/{startdir}
+;web.url.tree = https://git.adelielinux.org/adelie/packages/-/tree/master/{startdir}
 
 ; Optional: URL for bug (default: not shown)
 ; Substitutions: {id}
@@ -131,7 +131,7 @@ cgi.data = /var/db/apkvitrine
 ; Optional: URL for merge request (default: not shown)
 ; Substitutions: {id}
 ;
-;web.url.mr = https://code.foxkit.us/adelie/packages/-/merge_requests/{id}
+;web.url.mr = https://git.adelielinux.org/adelie/packages/-/merge_requests/{id}
 
 ; Optional: add a Repology badge with a link (specify both; default: not
 ; shown)
@@ -153,7 +153,7 @@ cgi.data = /var/db/apkvitrine
 ; Required for the builders page: Gitlab API endpoint for the project
 ; with which the runners are associated
 ;
-;gl.api = https://code.foxkit.us/api/v4/projects/76
+;gl.api = https://git.adelielinux.org/api/v4/projects/76
 
 
 
@@ -168,4 +168,4 @@ cgi.data = /var/db/apkvitrine
 
 
 [1.0-beta4]
-;web.tree_url = https://code.foxkit.us/adelie/packages/-/tree/1.0-BETA4/{startdir}
+;web.tree_url = https://git.adelielinux.org/adelie/packages/-/tree/1.0-BETA4/{startdir}

@@ -17,7 +17,7 @@ webdir = get_path("WEBAPPDIR")
 distutils.core.setup(
     name="apkvitrine",
     version=apkvitrine.VERSION,
-    url="https://code.foxkit.us/sroracle/apkvitrine",
+    url="https://git.adelielinux.org/sroracle/apkvitrine",
     author="Max Rees",
     author_email="maxcrees@me.com",
     classifiers=[
