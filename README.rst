@@ -11,7 +11,7 @@ a package tracker and analyzer for APK repositories
 :Releases and source code:
   `Adélie Linux Gitlab <https://git.adelielinux.org/sroracle/apkvitrine>`_
 :Copyright:
-  © 2020 Max Rees. NCSA open source license.
+  © 2020-2021 Max Rees. NCSA open source license.
 
 Dependencies
 ------------
