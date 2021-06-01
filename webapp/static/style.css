@@ -1,24 +1,16 @@
-nav.breadcrumb a { color: #b5b5b5 }
-nav.breadcrumb .is-active a { color: white }
-.pagination-list li { list-style-type: none }
+.row { margin-bottom: 0 }
 
 .version {
   text-align: center !important;
   vertical-align: middle !important;
   font-weight: bold;
 }
-.version.is-success, .version.is-warning, .version.is-danger {
-  border-color: #dbdbdb !important
-}
-
-.pkgver th, #pkgdetails th, #related .column summary{
-  background: #EAECF0;
-  border: 1px solid #A2A9B1;
-}
 .pkgver th { text-align: center !important }
 #pkgdetails th { width: 10em }
 
-#related .column summary {
+#related summary {
+  background: #EAECF0;
+  border: 1px solid #A2A9B1;
   font-size: 1.2em;
   font-weight: bold;
   padding: 0.2em 0.4em;
@@ -29,13 +21,42 @@ nav.breadcrumb .is-active a { color: white }
    */
   display: list-item;
 }
-#related .column ul { padding-left: 1.2em }
+#related details ul { margin-top: 0.5em; padding-left: 1.2em }
 
-#search-controls .glob { margin-bottom: 0.5rem }
-#search-controls .glob > .field { margin-bottom: 0 }
-#search-controls .glob .control { padding: 0 0.25rem 0 0.25rem }
+#search-controls .col { padding: 0 0.25rem 0 0.25rem }
+#search-controls .form-control-sm { margin-bottom: 0.5rem; font-size: 16px }
+#search-controls select, #search-controls .btn { width: 100%; font-size: 16px }
 
 .builders th, .builders td {
   text-align: center !important;
   vertical-align: middle !important;
+}
+
+.pkglist.table-responsive {
+  width: 100%;
+  height: 50vh;
+  overflow-y: visible;
+}
+.pkglist .table-striped tbody tr { background-color: #ffffff }
+.pkglist .table-hover tbody tr:hover { background-color: #ececec }
+.pkglist .table-striped tbody tr:nth-of-type(2n+1) { background-color: #f2f2f2 }
+.pkglist table { margin-bottom: 0 }
+.pkglist table > thead > tr > th {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  box-shadow: inset 1px 1px #e3e6e9, 0 1px #e3e6e9;
+  z-index: 992;
+}
+.pkglist table > tbody > tr > th {
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  box-shadow: inset 1px 1px #e3e6e9, 0 1px #e3e6e9;
+  z-index: 991;
+}
+
+nav.branch {
+  width: 100%;
+  margin-top: 1rem;
 }

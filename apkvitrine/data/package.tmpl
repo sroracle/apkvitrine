@@ -11,50 +11,56 @@
 # set repology_name = pkg.origin.name if pkg.origin else pkg.name
 
 # block breadcrumb
-<nav class="breadcrumb is-medium">
- <ul>
-  <li><a href="-/versions">packages</a></li>
-  <li><a href="{{ branch }}">{{ branch }}</a></li>
-  <li class="is-active"><a href="{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></li>
- </ul>
+<nav aria-label="breadcrumb">
+ <ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="-/versions">packages</a></li>
+  <li class="breadcrumb-item"><a href="{{ branch }}">{{ branch }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a href="{{ branch }}/{{ pkg.name }}">{{ pkg.name }}</a></li>
+ </ol>
 </nav>
 # endblock
 
 # block content
-<h3 class="title is-3">Latest version availability by architecture</h3>
+<div class="row">
+<h3>
+Latest version availability by architecture
 # if conf.get("web.repology.link") and conf.get("web.repology.badge")
-<p>
  <a href="{{ conf["web.repology.link"] ~ repology_name }}">
   <img src="{{ conf["web.repology.badge"] ~ repology_name }}" onerror="this.style.display='none'" alt="Repology version information">
  </a>
-</p>
 # endif
-<div class="table-container">
-<table class="table is-bordered pkgver">
+</h3>
+<div class="table-responsive">
+<table class="table table-bordered pkgver">
+  <thead class="thead-light">
   <tr>
     # for arch in arches
     <th>{{ arch }}</th>
     # endfor
   </tr>
+  </thead>
+  <tbody>
   <tr>
     # for arch in arches
     #   set apk = versions|selectattr("arch", "==", arch)|first
     #   if apk.vrank is none
-    #     set cell = ("is-danger", "&cross;")
+    #     set cell = ("table-danger", "&cross;")
     #   elif apk.vrank
-    #     set cell = ("is-warning", "~ " ~ apk.version)
+    #     set cell = ("table-warning", "~ " ~ apk.version)
     #   else
-    #     set cell = ("is-success", "&check; " ~ apk.version)
+    #     set cell = ("table-success", "&check; " ~ apk.version)
     #   endif
     <td class="version {{ cell[0] }}">{{ cell[1]|safe }}</td>
     # endfor
   </tr>
+  </tbody>
 </table>
 </div>
 
-<h3 class="title is-3">Details for version {{ newest }}</h3>
-<div class="table-container">
+<h3>Details for version {{ newest }}</h3>
+<div class="table-responsive">
 <table class="table is-bordered" id="pkgdetails">
+  <tbody class="thead-light">
   <tr><th>Description</th> <td>{{ pkg.description }}</td></tr>
   # if pkg.url
   <tr><th>URL</th>         <td>{{ pkg.url|urlize }}</td></tr>
@@ -80,7 +86,7 @@
   # set revision = pkg.revision
   # if revision.endswith("-dirty")
   # set revision = revision.replace("-dirty", "", 1)
-  # set tag = " <span class='tag is-danger'>dirty</span>"
+  # set tag = " <span class='badge badge-danger'>dirty</span>"
   # endif
   # if conf.get("web.url.rev")
   # set url = conf["web.url.rev"].format(revision=revision)
@@ -91,11 +97,13 @@
   # set url = conf["web.url.tree"].format(startdir=pkg.startdir)
   <tr><th>Source files</th><td><a href="{{ url }}">View git repository</a></td></tr>
   # endif
+  </tbody>
 </table>
 </div>
+</div>
 
-<div id="related" class="columns is-desktop">
-  <div class="column">
+<div id="related" class="row">
+  <div class="col-12 col-md-4">
    <details id="deps">
     # set deps = deps|groupby("dep")|list
     <summary>Dependencies ({{ deps|length }}) </summary>
@@ -104,9 +112,9 @@
       # set dep = deps[0]
       # set archdeps = deps|selectattr("arch")|groupby("arch")|list
       # if not dep.rdep
-        # set class = "class='tag is-danger' title='This package does not exist'"
+        # set class = "class='badge badge-danger' title='This package does not exist'"
       # elif archdeps
-        # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
+        # set class = "class='badge badge-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
         # if dep.rdep
@@ -114,7 +122,7 @@
         # endif
           <span {{ class|safe }}>{{ dep.dep }}</span>
           # for arch, _ in archdeps
-          <span class="tag is-light">{{ arch }}</span>
+          <span class="badge badge-secondary">{{ arch }}</span>
           # endfor
         # if dep.rdep
         </a>
@@ -124,7 +132,7 @@
     </ul>
    </details>
   </div>
-  <div class="column">
+  <div class="col-12 col-md-4">
    <details id="rdeps">
     # set rdeps = rdeps|groupby("dep")|list
     <summary>Required by ({{ rdeps|length }})</summary>
@@ -133,13 +141,13 @@
       # set rdep = rdeps[0]
       # set archdeps = rdeps|selectattr("arch")|groupby("arch")|list
       # if rdep.arch
-      # set class = "class='tag is-warning' title='This dependency only occurs on the following architectures'"
+      # set class = "class='badge badge-warning' title='This dependency only occurs on the following architectures'"
       # endif
       <li>
         <a href="{{ branch }}/{{ rdep.dep }}">
           <span {{ class|safe }}>{{ rdep.dep }}</span>
           # for arch, _ in archdeps
-          <span class="tag is-light">{{ arch }}</span>
+          <span class="badge badge-secondary">{{ arch }}</span>
           # endfor
         </a>
       </li>
@@ -148,7 +156,7 @@
    </details>
   </div>
   # if subpkgs
-  <div class="column">
+  <div class="col-12 col-md-4">
    <details id="subpkgs">
     <summary>Subpackages ({{ subpkgs|length }})</summary>
     <ul>
@@ -166,7 +174,7 @@
 </div>
 
 # if bugs and conf.get("web.url.bug")
-<h3 class="title is-3">Open issues</h3>
+<h3>Open issues</h3>
 <table class="table" id="bugs">
   <tr>
     <th>#</th>
@@ -185,7 +193,7 @@
 # endif
 
 # if merges and conf.get("web.url.mr")
-<h3 class="title is-3">Open merge requests</h3>
+<h3>Open merge requests</h3>
 <table class="table" id="merges">
   <tr>
     <th>#</th>
