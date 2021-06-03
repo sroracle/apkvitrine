@@ -98,15 +98,19 @@
 # if not simple
 <div class="col-12 col-md-8">
 # else
+<div class="col-12 mb-0">
 {{ quicksearch(branch) }}
+</div>
 # endif
 # if pkgs
 # if query["page"] == 1
+<div class="col-12 mb-0">
 <div class="alert alert-primary">
 {{ query["total"] }} packages were found.
 # if query["total"] // (query["limit"] + 1)
 Displaying the first {{ query["limit"] }}.
 # endif
+</div>
 </div>
 # endif
 <div class="table-responsive pkglist">
